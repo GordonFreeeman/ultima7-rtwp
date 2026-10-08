@@ -1,0 +1,234 @@
+{
+  "release": "1.1",
+  "date_utc": "2026-10-08",
+  "scope": "Targeted native DOS runtime, build, and installer validation. No complete campaign certification.",
+  "identity": {
+    "pristine_sha256": "4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54",
+    "pristine_bytes": 689248,
+    "release_sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786",
+    "release_bytes": 713824,
+    "behavior_candidate_sha256": "4619d9cb9b4c9032275752ad696235446fdc454ec7f75a00ec105714317b0337",
+    "earlier_combat_candidate_sha256": "3031f393f14966e146f310ca29df6b4a579b89678c7e202507a7db4221d08997",
+    "previous_v7_sha256": "7e7d908a0885627f545fd6a6ef299d34e170bdb19bfc85e8db6d2d05b5f01349",
+    "release_difference": "Only the hidden label changed from Paused: Show to Paused Show after behavioral testing. The final label was verified in a fresh native boot; restoring that single source string independently reproduces the tested behavioral executable exactly."
+  },
+  "method": {
+    "engine": "Original DOS U7.EXE through the supplied ULTIMA7.COM launcher",
+    "emulator": "DOSBox 0.74-3, normal core, fixed 12000 cycles",
+    "evidence": "Native VGA captures and bounded read-only guest-state samples from disposable game copies. Runtime instrumentation is not installed in the release. Original supplied files and saves were not used as mutable test fixtures."
+  },
+  "build": {
+    "independent_rebuild_matches_release": true,
+    "restoring_only_original_hidden_label_reproduces_behavior_candidate": true,
+    "patch_blocks": 15,
+    "source_files": {
+      "commands.inc": "22e348597b000561f2a1a831435554a397b11fb5504e0eb1e775256bf58eac91",
+      "include/common.asm": "8b76f52fe8b0476d40587020c1afe1c922f37c66cddd6240abe8f723f8c5f72a",
+      "include/constants.asm": "ef2264da24e67f2cbb572212effb0c88371726f8dfa5b95a365710d50c500fe2",
+      "include/patch_macros.asm": "a578f3b78250c04c6d48f9bade92f304e1db8bf15da5ec53197819b4bf2ee85e",
+      "include/segments.asm": "da89b91043a67e5d9a94769368d01fb9bfd9843f7e290e7998fc5c34284611a7",
+      "include/u7bg.asm": "085b9d72d113e25d585586466b4b63966b0ed3830b0d8051df7f1e3c627211f0",
+      "include/weapon_types.inc": "afba16acd36c9e7ae610946a05258bedb82f6352d191dda760782c8716a9cdaa",
+      "native_patcher.py": "240e1a70d46bc4e0a208f425b6fe3b9db3245c4c7e1af3d44cf1be9f1e6ab71e",
+      "panel.inc": "44fa9c4b3c04d19db05b8fb91ad4b4805e716b55bf44c83e14b1067059ad3608",
+      "pause.asm": "3a1334b574ce46bdc80a20c5b4ba5a4c0d26cbbd0fc19fbe5b8370731a765ddd",
+      "weapons.inc": "a9ac41b9ed5bd268f55389b304dd0654f247cb3a344cc60267ad0af50de9f98c"
+    }
+  },
+  "ui": {
+    "panel_pixels": [
+      180,
+      94
+    ],
+    "display_pixels": [
+      320,
+      200
+    ],
+    "area_fraction": 0.264375,
+    "default_position": [
+      4,
+      106
+    ],
+    "hidden_control_pixels": [
+      80,
+      14
+    ],
+    "no_tactical_dimming": true,
+    "checks": {
+      "hidden_game_ticks_fixed": true,
+      "hidden_days_fixed": true,
+      "hidden_party_item_records_identical": true,
+      "hidden_orders_identical": true,
+      "hidden_irq_keeps_advancing": true,
+      "mouse_party_select": true,
+      "mouse_hold": true,
+      "mouse_auto": true,
+      "escape_cancels_T_G_M_without_resume": true,
+      "right_cancels_G_without_route": true,
+      "native_R_gear": true,
+      "native_I_gear": true,
+      "top_left_drag_clamped": true,
+      "bottom_right_drag_clamped": true,
+      "mouse_resume_advances_world": true,
+      "reopened_drag_position_remembered": true,
+      "tab_hides": true,
+      "tab_shows": true,
+      "final_short_reopen_label_visually_verified": true
+    },
+    "hidden_pause": {
+      "approx_wall_seconds": 3.2,
+      "game_ticks": [
+        10737,
+        10737
+      ],
+      "game_days": [
+        13,
+        13
+      ],
+      "irq_ticks": [
+        9049,
+        9242
+      ],
+      "party_records_unchanged": true,
+      "orders_unchanged": true
+    },
+    "drag_positions": [
+      [
+        4,
+        106
+      ],
+      [
+        74,
+        45
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        140,
+        106
+      ]
+    ],
+    "mouse_resume_game_ticks": [
+      10737,
+      10745
+    ],
+    "picker_cancel": "T, M, and G canceled by Escape; G canceled by right-button press. Native cursor restored, previous orders retained, game time unchanged. R opens selected native equipment when the actual weapon does not match."
+  },
+  "confirmed_regressions": [
+    {
+      "name": "Stale return-to-automatic schedule",
+      "reproduction_build": "previous v7",
+      "observed": "Hold captured combat schedule 0. Native C ended combat and put Avatar on follow 31, but skipped held Shamino. Auto restored stale combat 0; Shamino pursued again and spider HP changed 9 to 6.",
+      "repair": "After actual native combat start/end calls, synchronize stored ordinary follow/combat policy. Combat end changes explicit Attack to Hold and clears its target while preserving existing Hold and Move.",
+      "current_behavior_candidate_pass": "Both actual C start/end transitions repeated; Auto restored native combat 0 after start and follow 31 after end."
+    },
+    {
+      "name": "Avatar movement overwrites manual companion ownership",
+      "reproduction_build": "earlier combat candidate before movement hook",
+      "observed": "All eight actors had Hold. Ordinary right-mouse Avatar movement invoked the native party-wide follow reset, and a held Tseramed moved one tile while still owning a Hold record.",
+      "repair": "Guard the reset at resident 4:07AB. Preserve manual non-Avatar orders while allowing original reset for Avatar and Auto companions.",
+      "current_behavior_candidate_pass": "Avatar moved from (1662,1767) to (1672,1767); all seven held companions retained identical positions."
+    }
+  ],
+  "current_companion_acceptance": [
+    {
+      "case": "Hold during ordinary Avatar movement",
+      "result": "PASS",
+      "observation": "All seven held companions stayed fixed."
+    },
+    {
+      "case": "Move during ordinary Avatar movement",
+      "result": "PASS",
+      "observation": "Spark retained owned route 52328, advanced (1660,1765) to (1668,1772) to (1672,1776), then completed in Hold; six other held companions stayed fixed."
+    },
+    {
+      "case": "Return to Auto following",
+      "result": "PASS",
+      "observation": "Spark followed from (1672,1776) to (1674,1774) during Avatar movement while six held companions stayed fixed."
+    },
+    {
+      "case": "Attack during ordinary Avatar movement",
+      "result": "PASS",
+      "observation": "Spark kept ranged target NPC 304 and native combat schedule 0 during Avatar movement. The target was later removed from the native NPC table; the order changed to Hold without selecting a different foe."
+    },
+    {
+      "case": "Combat start/end policy restoration",
+      "result": "PASS",
+      "observation": "Hold followed by Auto restored native combat 0 after actual start and follow 31 after actual end."
+    }
+  ],
+  "earlier_runtime_coverage": [
+    {
+      "build": "earlier combat candidate 3031f393f14966e146f310ca29df6b4a579b89678c7e202507a7db4221d08997",
+      "observations": [
+        "Actual native C end canceled a live Attack into Hold and cleared the target. An owned Move route and existing Hold orders survived the end.",
+        "With the Avatar held, Spark ranged attack changed the selected spider signed HP from 9 to -10 after two resumed seconds; the other seven held actors stayed fixed."
+      ]
+    },
+    {
+      "build": "delivered tactical v7 7e7d908a0885627f545fd6a6ef299d34e170bdb19bfc85e8db6d2d05b5f01349",
+      "observations": [
+        "Avatar target command changed spider signed HP from 9 to -3; all seven held companions remained fixed.",
+        "Tseramed ranged attack consumed arrows 23 to 22 to 20; target removal changed the order to Hold. Final target HP was not sampled before removal.",
+        "Cold startup, paused active combat, generated target names and source reproducibility were checked."
+      ]
+    },
+    {
+      "build": "tactical candidate 6 fd76eca2856c5ace1b9623f7176a2bf1bcfbe2b916c3919378851920634daf3f",
+      "observations": [
+        "Shamino melee with an equipped lightning whip changed spider HP from 9 to 1. Hold canceled the attack.",
+        "Confirmed in-place loading released an old owned Move route before native restore and cleared all nine command modes and route pointers afterward."
+      ]
+    },
+    {
+      "build": "tactical candidate 3 ebd5028575cd7ebabf3af142ad4cb4348efa5a5f2cdd3d8a6c23e805322229e2",
+      "observations": [
+        "An actual native save serialized Spark with ordinary schedule 31 and attack quality 2, then restored the running Hold order. This save was subsequently loaded under candidate 6.",
+        "World shortcut and inventory disk SaveUI paths restored ordinary native policy while open and reapplied pending orders after closing."
+      ]
+    }
+  ],
+  "limits": [
+    "The exact user-reported offscreen regrouping and apparent teleport were not reproduced. Two concrete command-ownership bugs were reproduced and fixed.",
+    "The original automatic-follow catch-up path remains: resident 41:21BF checks follow schedule 31; offscreen recovery calls 249:0039 and native coordinate setter 86:1648. This is a static trace, not a measured teleport in these tests.",
+    "Runtime combat transition tests used native keyboard C. The other guarded script/dialog callers were statically audited but not separately triggered in a live scenario.",
+    "The original C key bases its start/end decision on the Avatar schedule. With the Avatar explicitly held, return the Avatar to Auto before using C to end ordinary combat. This release does not introduce a separate global combat-state model.",
+    "Saved games retain their native format. Loading starts with automatic orders; pending tactical orders are session state. Save/load observations from earlier candidates are labeled, not presented as newly repeated complete coverage.",
+    "Tests do not cover an entire campaign, every weapon, every quest transition, or every DOS configuration. Installer execution was tested on the Linux host; Windows/macOS command examples are provided but were not separately run on those hosts."
+  ],
+  "privacy_and_distribution": "This public report includes derived observations only. It contains no guest RAM dumps, game executable, assets, or save files.",
+  "installer_validation": {
+    "version": "1.1",
+    "output_sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786",
+    "status": "passed",
+    "checks": [
+      "pristine check: complete output verified; no game writes",
+      "pristine install: exact release hash; verified backup; saves/config retained",
+      "current version: idempotent install/check and direct executable path",
+      "uninstall: exact original restored; backup/save/config retained; repeat safe",
+      "v7 upgrade: existing local original recognized; old files and new progress retained",
+      "v7 missing backup: refused without writes; explicit verified original succeeds",
+      "unknown/modified executable: install/uninstall refused without writes",
+      "conflicting backup: check/install refused; both existing files retained",
+      "concurrent installer lock: refused before executable replacement",
+      "FAT/exFAT backup fallback: exclusive creation, verified backup, exact installed hash",
+      "replacement failure: original executable retained; verified backup and no stale lock"
+    ]
+  },
+  "distribution_build_validation": {
+    "version": "1.1",
+    "output_sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786",
+    "status": "passed",
+    "checks": [
+      "ZIP: CRC and every member hash passed; complete source and all public reports included",
+      "ZIP exclusions: no original/modified EXE, game resources, saves, images, private reports, test inputs or Python caches",
+      "fresh ZIP extraction: native source rebuild byte-equal to frozen executable",
+      "packaged generator: default ./source and optional report copying reproduce exact native output without caches",
+      "destructive output paths: source/ancestor/unmarked folder refused and retained",
+      "archive verification failure: prior ZIP retained before publication"
+    ],
+    "publication_note": "The final archive was regenerated after these report fields were added. Runtime executable, native source, installer, and build logic remained identical; final member hashes and ZIP CRC were rechecked."
+  }
+}

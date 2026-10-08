@@ -1,0 +1,376 @@
+NATIVE TACTICAL COMBAT 1.1: REVERSE ENGINEERING NOTES
+
+1. SUPPLIED BUILD
+
+The input is the English Ultima VII: The Black Gate 3.4 executable with Forge
+of Virtue. U7.EXE is 689,248 bytes (0xA8460), with SHA-256:
+4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54
+
+The supplied ZIP contains 451 members, including 448 files. Its SHA-256 is:
+ea27d3ae73d68e3c343b520b9388c216514182f790b79d66fc07b923fe556a44
+
+The native executable has an MZ resident image and uncompressed Borland FBOV
+overlays. The resident image begins at file 0x5000 and ends at 0x4EEB0. The
+16-byte FBOV header declares a segment table at 0x41360 with 360 entries and
+0x595A0 original overlay bytes. There are 143 loader-managed overlay segments.
+The original MZ relocation table contains 5,069 entries.
+
+A published address map and overlay format were available in John Glassmyer's
+MIT-licensed UltimaHacks. The supplied executable was independently parsed,
+disassembled and checked against the map. This modification uses the mapped
+native routines and the patch-block assembly macros; it does not apply the
+upstream collection of unrelated gameplay or interface changes.
+
+Reference source commit:
+0f449c77fa7166e5b594b7459a87fdd979df9efd
+https://github.com/JohnGlassmyer/UltimaHacks
+Relevant source: u7bg/u7map, u7bg/include/u7bg.asm,
+u7-common/patch-eop-targetKeys.asm, and UltimaPatcher's overlay format code.
+See LICENSE-UPSTREAM.txt for the retained copyright and permission notice.
+
+2. FILES THAT MATTER
+
+U7.EXE owns the world input reader, simulation step, native party actions,
+combat target selection, inventory interface, path construction and save UI.
+STATIC/WEAPONS.DAT supplies the equipment categories used by M and R.
+STATIC/TEXT.FLX and the NPC records provide native names during investigation;
+the command panel reads the current native actor name at runtime.
+
+The installer replaces only U7.EXE and creates a verified local original
+backup. It retains the player's current saves, assets, launchers and settings.
+The share package contains patch objects, source, technical notes and the
+upstream license notice. Its installer obtains original overlay code from
+the recipient's own hash-verified original executable. It does not distribute
+the original or modified EXE, a full original overlay, game assets or saves.
+
+3. PATCH AND RELOCATION STRATEGY
+
+Overlay 336 originally has 0xD80 code bytes and 29 exported procedures. The
+patcher copies its original code and relocations to the original file end,
+reserves 0x5000 code bytes plus 0x1000 relocation bytes, and adds three exports
+in verified spare resident stub space. The resulting EXE is 713,824 bytes,
+24,576 bytes larger. Original overlay code is preserved in the expanded copy.
+
+The new overlay code begins at file 0xA8460. New resident stub offsets
+336:00B1,00B6,00BB resolve to overlay offsets 0D80,0D85,0D8A. These are the
+input wrapper, private modal/picker dispatch, and world-step/lifecycle
+dispatch. New code starts at 0DA0. The normal Borland overlay loader still loads and relocates it.
+
+The patcher repairs the FBOV byte count, overlay location/code length,
+procedure count, stub extent and relocation tables. Existing resident
+relocation representation is retained. It rejects an unknown input hash,
+wrong original instructions, overlapping or out-of-bounds patch blocks,
+split relocation words and relocation-table overflow. No compressed stream,
+raw packed byte sequence, or overlapping executable region is edited.
+
+4. NATIVE HOOKS
+
+Locations below use the FBOV segment-table index, not a runtime DOS segment.
+
+  30:0084  file 18E64  Replace the per-step keyboard discard with the command
+                      tick. The original five bytes are 9A C2 02 3E 1C.
+  31:0FAB  file 1A01B  Wrap the world keyboard/mouse reader, keeping its three
+                      near by-reference outputs and caller cleanup.
+                      Original bytes:9A 61 01 3E 1C.
+  340:0304 file 9F894  World save UI owner, nine bytes.
+                      B8 0C 10 50 90 0E E8 09 0E
+  340:1454 file A09E4  Dialog save UI owner, eight bytes.
+                      B8 0C 10 50 0E E8 BA FC
+  340:1700 file A0C90  Inventory disk save UI owner, eight bytes.
+                      B8 0C 10 50 0E E8 0E FA
+  344:0FB3 file A5FA3  Confirmed in-place restore call, five bytes.
+                      9A 2A 00 F0 07
+
+Each save owner retains its native near pointer to DS:100C and calls the
+shared wrapper. The wrapper calls the unchanged save UI through 340:00B1,
+which resolves to overlay code 1116. All three native owners are covered.
+
+5. PAUSE AND NATIVE TIME
+
+The simulation step is resident 30:007E. The tactical panel blocks inside the
+world input owner and does not call that step. The original camera renderer,
+small proportional text printer and frame-buffer copy render the panel.
+Version 1.1 adds no camera darkening. Original game lighting is preserved.
+
+The GameTimer object begins at DS:1504, with game ticks at 1516 and days 1518.
+Its step at resident 22:025E advances simulation time. The separate IRQ wall
+clock at DS:351C continues to tick while paused because native mouse and UI
+waits depend on it. Palette cycling also continues. These UI effects are not
+world or projectile simulation.
+
+Space is intercepted before the original key-mouse translator consumes it.
+The wrapper respects the native one-byte ungetch buffer and BIOS key queue,
+then consumes Space through the native poller. Other keys use the original
+reader. Native DS:9BA8 input/transition suspension is respected by both the
+Space wrapper and command enforcement.
+
+Callbacks preserve native registers, flags, DS and ES as appropriate. They
+do not reload FS or GS, whose cached unreal-mode limits belong to the game's
+Voodoo memory manager. Overlay strings are copied into near stack storage
+before far calls, so an overlay eviction cannot invalidate a string pointer.
+
+6. INDIVIDUAL ORDER STATE
+
+Small command records occupy DS:1090..10F6; panel state occupies
+DS:1055..1063. Both ranges are inside the unused build-stamp string at
+1055..1100. The terminating null at 1100 and the next live diagnostic
+string at 1101 are retained. A reference audit found no native code owner for
+the reused stamp bytes; the upstream map also identifies this unused range.
+
+There are nine ten-byte records: stable NPC identity, owned path pointer,
+target NPC identity, order mode, prior attack quality, prior schedule and
+reserved flags. Order modes are automatic, hold, target and move. The current
+party roster can reorder during movement, so records resolve the native NPC
+identity rather than transferring commands with an item-buffer offset or
+formation slot. The panel numbers refer to the current party order.
+
+Native party IBOs are at DS:3089, party size at 30B9, Avatar IBO at 4C0C and the
+NPC-to-IBO table at 7B60. Actor data is accessed through the native item buffer
+segment at 4B36 and native helpers. NPC buffer records are 105 bytes, cached in
+32 slots. Their pointers are not retained across calls that may evict a cache
+entry. Native NPC name is at record+59, limited to 16 bytes. Unnamed generated
+creatures use native 243:0025 to produce a display name, bounded to 80 bytes
+in the existing stack buffer.
+
+H stops the selected actor's action stack through native 62:02D9, sets its
+wait schedule 15 and manual attack quality 9, and clears its temporary targets.
+The Avatar-specific native state byte at DS:77BC, which the original wait
+reset changes, is preserved around that reset.
+
+G uses native 247:006B to create a path for the selected actor, then native
+37:0DA9 to advance it during unpaused simulation. Native 37:07AD deletes the
+owned route exactly once. Completion or a failed route produces hold.
+
+A restores the current ordinary native schedule and captured attack quality,
+clears the explicit target and releases any owned path. Native combat-start
+and combat-end callbacks now keep the saved combat/follow schedule current;
+they preserve the separately owned tactical order as described below. A departing companion's record
+is removed, with its native departure schedule preserved. Dead or unconscious
+actors remain governed by native character status.
+
+7. REAL ATTACK EXECUTION
+
+T selects through the original blocking world picker 234:0020. It rejects
+party members and objects without a valid NPC identity. A target order calls
+native combat setup and Item_setNpcTarget through 219:006B, which resolves to
+overlay code 0F12. It then keeps the actor's primary/current target fields and
+primary-target flag asserted before each simulation step.
+
+NPC buffer fields used by native combat are: schedule+0A, primary target+19,
+secondary+1B, current/oppressor+1D, and primary-target flag+28 bit 0. Companion
+quality 9 bypasses automatic tactic selection while the explicit primary target
+enters the original attack/pursuit pipeline. The native readiness call is
+219:0066; actual attack is 219:002A; pursuit is 219:004D.
+
+The Avatar has a separate native manual-quality 9 early return. Avatar TARGET
+therefore uses quality 0 while retaining the explicit primary target, which
+bypasses autonomous target choice in the Avatar branch. Hold still uses 9.
+This distinction is needed for a queued Avatar attack to execute after resume.
+
+M and R use native getItemInSlot at resident 70:0040. The original combat weapon
+resolver 219:0337 reads slot 1, LEFT_HAND. The supplied WEAPONS.DAT contains 115
+21-byte records; usage is record byte 8 bits 1-2. Pure melee is 0, throwable
+hybrids 1/2, and missile weapons 3. The generated lookup is in
+source/include/weapon_types.inc, with its source-file hash.
+
+M validates pure melee or fists. R validates a missile weapon. A mismatch
+opens the selected actor's original equipment interface, then rechecks the
+actual left-hand weapon before offering target selection. Equipment, two-hand
+occupancy, ammunition, range, projectiles, hit calculations and damage remain
+owned by the native game. T retains native hybrid-weapon behavior.
+
+For runtime verification, native health getter 86:088C reads a signed byte at
+itemBuffer:[word(itemBuffer:actorIBO+6)+6] for actors. NPC buffer+09 is combat
+skill, not health. Native quantity getter 86:0A2D reads ordinary arrow quantity
+from itemBuffer:arrowIBO+7 masked with 7F; shape 722 arrows use that storage rule.
+
+8. SAVE LIFECYCLE
+
+Before the blocking save/load UI serializes the world, the extension restores
+ordinary native schedules and attack qualities for owned actors. Runtime
+records and route ownership remain intact. Save/Cancel resumes the pending
+orders without advancing their paths. An exit releases owned orders/routes.
+
+There are two restore lifecycles. The SaveUI load callback restores the world
+in place, with DS and the IRQ wall timer retained. At overlay 344:0FB3 it calls
+native 254:002A with the near save descriptor DS:784C and a slot number. The
+extension wraps this confirmed call, frees owned routes while the old heap is
+still valid, then clears all tactical records after the native restore returns.
+The existing lifecycle export distinguishes this two-word restore ABI from the
+SaveUI ABI by their verified first arguments, 784C and 100C.
+
+The other path, controlled by DS:1EBF, exits U7.EXE with code 9 and invokes
+MAINMENU.EXE through ULTIMA7.COM before a fresh U7.EXE process. Fresh process
+initialization also clears the extension state. A full native call inventory
+found only one other direct 254:002A caller,251:01EE, used at startup with slot
+FFFF before any tactical records or paths exist.
+
+Saved games therefore remain native-format worlds and load into automatic
+companion behavior. Tactical orders are not serialized as pointers or custom
+fields into the save. A confirmed load attempt releases pending orders even if
+the native load subsequently fails; canceling the confirmation keeps them.
+
+9. REPRODUCIBILITY AND VERIFICATION
+
+See README.md for installation or a clean source rebuild using your own
+verified U7.EXE, Python 3.10 or later, and NASM. BUILD.json records the final
+executable hash, patch blocks and file offsets. VALIDATION.json separates
+current-release and historical runtime observations. These are targeted
+runtime checks, not a complete campaign or equipment/quest compatibility test.
+
+
+10. COMPACT MOUSE PANEL (VERSION 1.1)
+
+The panel is 180 by 94 native pixels, about 26.4 percent of the 320 by 200
+viewport. It starts at x=4,y=106, leaving the center of the world unobscured.
+The title bar is draggable. Coordinates are remembered for the running
+process and clamped to x=0..140, y=0..106 so all controls remain reachable.
+Tab or the Tab Hide button hides the panel without leaving the pause loop.
+A fixed 80 by 14 Paused Show control restores it by mouse; Tab also restores
+it. Opening a new tactical pause shows the panel at its remembered position.
+
+The same existing commands are used by keyboard and mouse buttons. Party
+buttons select the current roster slot. A command click is committed only
+when press and release land on the same control. The native mouse queue and
+held buttons are drained before entering a picker or inventory, and before
+returning to the world. Clicking outside the panel does not command the world.
+
+The native MouseState comes from resident56:06AD; it is 12 bytes. The X word
+at +2 uses doubled horizontal pixels, confirmed by native56:0759 shifting it
+right once. Y at +4 is already a screen coordinate. Button state is at +6,
+logical action at +7, and the native wall-time field at +8. The panel keeps
+this native mouse owner and cursor handling. It does not create a separate
+DOS mouse driver.
+
+Native rectangle fill27:06F4 receives (near Viewport, color). A stack copy of
+the original viewport retains its selector and DWORD surface-row table; only
+its inclusive fill bounds change. That routine uses the native Voodoo access
+owner175:0008 when needed. The unsafe alternative of treating linear XMS
+addresses as ordinary 64K far pointers was rejected. Native169's specialized
+painter, which borrows FS/GS for pixel counts, is not called by the panel.
+
+Text uses Font_SMALL_BLACK=2 with the original proportional TextPrinter.
+Its baseline is seven pixels below our top-edge coordinates. A bounded stack
+viewport clips text to the window, including unusually long generated names.
+Melee/ranged status resolves the selected actor's actual equipped class and
+shows a short left-hand equipment instruction when it does not match.
+
+Panel state: magic1055, visible1056, dragging1057, x1058, y105A,
+drag offsets105C/105E, mouse buttons1060, pending action1061,
+tactical-modal-active1063. This remains separate from command records.
+
+11. NATIVE COMBAT TRANSITIONS AND AUTOMATIC POLICY
+
+The ordinary native schedules used here are combat0, wait15 and follow31.
+The previous version captured a schedule once at the start of manual control.
+Native combat setup/end skips an actor already on wait15. This made that
+saved schedule stale: Hold during combat, native C to end, then Automatic
+restored combat0 even though the party had returned to follow31. The inverse
+was possible when Hold preceded combat. Both directions were checked in DOSBox after the repair.
+
+Version 1.1 wraps every directly inventoried native begin/end call:
+
+  End:   31:0A0B   file19A7B   returnIP0A10
+         318:0346  file934F6   returnIP034B
+         342:165E  fileA3D1E   returnIP1663
+  Start: 31:0A1F   file19A8F   returnIP0A24
+         219:301D  file5E54D   returnIP3022
+         342:1682  fileA3D42   returnIP1687
+
+These calls share the existing third overlay export. The unchanged native
+beginCombat218:0025 or breakOffCombat218:0020 executes first, then a guarded
+command-lifecycle helper updates saved ordinary policies. The wrappers
+preserve the native call's return registers and flags around that helper.
+The original world tick is distinguished by its exact returnIP0089.
+
+Start changes captured ordinary follow31/combat0 defaults to combat0. End
+changes captured combat0 defaults to follow31, cancels current TARGET orders
+into HOLD, and clears their target identities. Explicit HOLD and MOVE orders
+and owned paths remain in place. Our direct beginCombat call made when a
+player assigns a target invokes the same start helper afterward.
+
+This uses actual combat transitions. It does not infer combat exit from an
+Avatar on wait15: a held Avatar can legitimately stay still while commanded
+companions attack. Native departure schedules outside these ordinary policy
+values are not rewritten by these callbacks.
+
+The native C key still decides start/end from the Avatar's own schedule.
+If the Avatar is explicitly on HOLD15, C takes its original start branch;
+return the Avatar to Automatic before using C to end ordinary combat. This
+release observes the real native transition rather than defining a new
+global combat-state flag.
+
+12. COMPANION OWNERSHIP DURING AVATAR MOVEMENT
+
+Native resident4:0732 handles ordinary Avatar movement and native autoroute
+flags at DS774B/774C. When the Avatar is on a schedule other than0 or31, its
+party loop calls reset_action(actorNear,31) at4:07AB, file0B56B, which can
+reset manually held companions before our next enforcement tick. A running
+candidate reproduced a held companion taking an uncommanded step while the
+Avatar was moved with the ordinary right mouse button.
+
+The five-byte call now uses the existing third export, recognized by its
+returnIP07B0. A stable-NPC predicate in commands.inc excludes the Avatar and
+checks whether that companion owns a non-AUTO order. For such companions the
+reset is skipped. For the Avatar and automatic companions the unchanged
+native two-argument reset action executes. The caller retains its four-byte
+argument cleanup; it does not consume the skipped return registers/flags.
+
+The following code still receives a fresh native NPC buffer. The fix does
+not teleport, alter coordinates, substitute pathfinding, or prevent ordinary
+Avatar mouse movement. Its purpose is to prevent the native party-wide reset
+from overriding an explicitly controlled companion between command ticks.
+
+Separately, the original following routine resident41:21BF admits follow31
+actors at22BE and includes an offscreen recovery path. That traced path calls
+249:0039 (overlay code0662) and the native coordinate setter86:1648, after a
+view-boundary check8:03BD. These are existing engine behaviors. The exact
+reported offscreen regrouping was not recreated with the user's input
+sequence, so the report distinguishes the reproduced command-ownership bug
+from this traced original recovery mechanism.
+
+13. CANCELLING TACTICAL WORLD PICKERS
+
+The original234:0020 world picker resolves to code0000 and waits for mouse
+selection. Contrary to an earlier assumption, its world branch has no Escape
+or right-button cancellation. A queued Escape could therefore be consumed
+later by the outer pause loop, after the next left click finally selected.
+
+Version 1.1 replaces the exact53-byte event-dispatch span234:0039..006D,
+file6C779. It retains the original mouse poll and all native object/world
+selection code. A private poll wrapper is dispatched through the existing
+modal export by its exact returnIP0042 and receives the original near
+12-byte MouseState pointer. Unrelated native pickers remain mouse-driven.
+
+While tactical-modal-active is1, Escape is intercepted before the native
+virtual-mouse reader can consume it, using the native ungetch/BIOS queue and
+original key consumer. A native right-button press also requests cancellation.
+The inline cancel branch restores the saved cursor through the native cursor
+owner and goes to the original stack epilogue1AD. Target IBO remains0 and a
+move request's initialized FFFF coordinates remain untouched. The previous
+valid order is therefore retained, and the outer tactical pause remains active.
+
+No world click, destination, teleport or successful attack is synthesized.
+The ordinary native event path still ignores no-event and motion-only states
+and executes its existing selection path for actual selections.
+
+14. SHARE PACKAGE AND REBUILD CONTRACT
+
+The compiled payload contains replacement patch blocks and relocation
+metadata, not a complete game executable or copied original overlay. The
+installer first verifies the complete original executable identity, copies
+its original overlay through the bounded MZ/FBOV parser, and applies the
+preassembled objects. It then verifies the complete expected output hash
+before the executable is replaced. Installation does not require NASM.
+
+A v7 upgrade requires the accepted v7 executable plus its verified original
+backup, normally TACTICAL/U7.ORI. A first installation or update writes its
+verified original backup to TACTICAL-PATCH/U7.ORI. Existing different backups
+are preserved and cause refusal. --check makes no game-file changes, a current
+release is idempotent, and --uninstall restores only a verified original.
+
+The source includes short original-instruction guards, factual offsets and
+numeric equipment categories necessary to verify and apply the patch. The
+upstream MIT notice applies to copied/adapted upstream software. The share
+package does not grant rights to the original game or contain its assets.
+See ATTRIBUTION.md and LICENSE-UPSTREAM.txt for the precise provenance.

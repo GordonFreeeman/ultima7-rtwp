@@ -1,0 +1,266 @@
+{
+  "version": "1.1",
+  "original": {
+    "size": 689248,
+    "sha256": "4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54",
+    "description": "English Ultima VII: The Black Gate 3.4 / Forge of Virtue"
+  },
+  "output": {
+    "size": 713824,
+    "sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786"
+  },
+  "patch_blocks": [
+    {
+      "patch": "native-tactical-pause",
+      "segment": 30,
+      "offset": 132,
+      "file_offset": 101988,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 31,
+      "offset": 4011,
+      "file_offset": 106523,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 340,
+      "offset": 772,
+      "file_offset": 653460,
+      "length": 9,
+      "relocations": [
+        6
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 340,
+      "offset": 5204,
+      "file_offset": 657892,
+      "length": 8,
+      "relocations": [
+        6
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 340,
+      "offset": 5888,
+      "file_offset": 658576,
+      "length": 8,
+      "relocations": [
+        6
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 344,
+      "offset": 4019,
+      "file_offset": 679843,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 31,
+      "offset": 2571,
+      "file_offset": 105083,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 318,
+      "offset": 838,
+      "file_offset": 603382,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 342,
+      "offset": 5726,
+      "file_offset": 671006,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 31,
+      "offset": 2591,
+      "file_offset": 105103,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 12317,
+      "file_offset": 386381,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 342,
+      "offset": 5762,
+      "file_offset": 671042,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 4,
+      "offset": 1963,
+      "file_offset": 46443,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 234,
+      "offset": 57,
+      "file_offset": 444281,
+      "length": 53,
+      "relocations": [
+        7,
+        21
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 336,
+      "offset": 3456,
+      "file_offset": 692704,
+      "length": 6276,
+      "relocations": [
+        84,
+        121,
+        175,
+        236,
+        360,
+        383,
+        407,
+        461,
+        536,
+        554,
+        560,
+        587,
+        596,
+        632,
+        662,
+        674,
+        834,
+        901,
+        958,
+        1110,
+        1144,
+        1157,
+        1210,
+        1228,
+        1267,
+        1321,
+        1327,
+        1380,
+        1398,
+        1412,
+        1430,
+        1444,
+        1453,
+        1485,
+        1500,
+        1541,
+        1597,
+        1669,
+        1740,
+        1827,
+        1869,
+        1886,
+        1940,
+        1982,
+        1999,
+        2056,
+        2121,
+        2274,
+        2292,
+        2349,
+        2457,
+        2469,
+        2477,
+        2482,
+        2487,
+        2567,
+        2590,
+        2608,
+        2660,
+        2723,
+        2741,
+        2755,
+        2774,
+        2844,
+        3025,
+        3043,
+        3113,
+        3456,
+        4357,
+        4368,
+        4458,
+        4506,
+        4949,
+        5065,
+        5169,
+        5181,
+        5570,
+        5669,
+        5687,
+        5757
+      ]
+    }
+  ],
+  "source_sha256": {
+    "commands.inc": "22e348597b000561f2a1a831435554a397b11fb5504e0eb1e775256bf58eac91",
+    "include/common.asm": "8b76f52fe8b0476d40587020c1afe1c922f37c66cddd6240abe8f723f8c5f72a",
+    "include/constants.asm": "ef2264da24e67f2cbb572212effb0c88371726f8dfa5b95a365710d50c500fe2",
+    "include/patch_macros.asm": "a578f3b78250c04c6d48f9bade92f304e1db8bf15da5ec53197819b4bf2ee85e",
+    "include/segments.asm": "da89b91043a67e5d9a94769368d01fb9bfd9843f7e290e7998fc5c34284611a7",
+    "include/u7bg.asm": "085b9d72d113e25d585586466b4b63966b0ed3830b0d8051df7f1e3c627211f0",
+    "include/weapon_types.inc": "afba16acd36c9e7ae610946a05258bedb82f6352d191dda760782c8716a9cdaa",
+    "native_patcher.py": "240e1a70d46bc4e0a208f425b6fe3b9db3245c4c7e1af3d44cf1be9f1e6ab71e",
+    "panel.inc": "44fa9c4b3c04d19db05b8fb91ad4b4805e716b55bf44c83e14b1067059ad3608",
+    "pause.asm": "3a1334b574ce46bdc80a20c5b4ba5a4c0d26cbbd0fc19fbe5b8370731a765ddd",
+    "weapons.inc": "a9ac41b9ed5bd268f55389b304dd0654f247cb3a344cc60267ad0af50de9f98c"
+  },
+  "distribution_contents": "source, replacement patch objects, installer, documentation, license notice",
+  "not_included": [
+    "original or patched executable",
+    "original overlay code",
+    "game assets",
+    "save files",
+    "configuration",
+    "gameplay screenshots"
+  ]
+}
