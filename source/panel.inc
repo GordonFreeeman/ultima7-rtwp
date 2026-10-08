@@ -746,7 +746,8 @@ panel_move_button: db 'G Move', 0
 panel_hold_button: db 'H Hold', 0
 panel_auto_button: db 'A Auto', 0
 panel_inventory_button: db 'I Gear', 0
-panel_resume_button: db 'Space Resume', 0
+panel_resume_button: db 'Resume', 0
+panel_cast_button: db 'C Cast', 0
 align 2
 panel_buttons:
     dw 6, 54, 54, 10, 't', offsetInCodeSegment(panel_target_button)
@@ -756,5 +757,6 @@ panel_buttons:
     dw 63, 66, 54, 10, 'h', offsetInCodeSegment(panel_hold_button)
     dw 120, 66, 54, 10, 'a', offsetInCodeSegment(panel_auto_button)
     dw 6, 78, 54, 10, 'i', offsetInCodeSegment(panel_inventory_button)
-    dw 63, 78, 111, 10, ' ', offsetInCodeSegment(panel_resume_button)
+    dw 63, 78, 54, 10, 'c', offsetInCodeSegment(panel_cast_button)
+    dw 120, 78, 54, 10, ' ', offsetInCodeSegment(panel_resume_button)
 panel_button_count equ (($-panel_buttons)/12)

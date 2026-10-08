@@ -20,6 +20,17 @@ import tempfile
 BASELINE_SHA256 = '4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54'
 BASELINE_SIZE = 0xA8460
 ORIGINAL_HOOKS = (
+    (86, 0x1CDB, '8b 1c 8e 06 36 4b'),
+    (219, 0x0008, '8b 7e 06 8b 76 08'),
+    (219, 0x280F, '9a 65 00 58 01'),
+    (219, 0x285D, '9a 65 00 58 01'),
+    (219, 0x3B89, '9a 65 00 58 01'),
+    (219, 0x2187, '9a 65 00 58 01'),
+    (219, 0x2978, '9a 65 00 58 01'),
+    (219, 0x29E7, '9a 65 00 58 01'),
+    (215, 0x01BC, '26 8a 47 10 b4 00'),
+    (215, 0x0339, '26 8a 47 10 b4 00'),
+    (215, 0x035E, '58 26 88 47 10'),
     (30, 0x0084, '9a c2 02 3e 1c'),
     (31, 0x0FAB, '9a 61 01 3e 1c'),
     # All native combat-end owners: world input, scripted action, and UI.
@@ -220,9 +231,24 @@ class Executable:
             next_start = min([x.start for x in self.segments if x.overlay and x.start > s.start]
                              + [len(self.data)])
             payload = b''.join(struct.pack('<H', x) for x in sorted(relset))
-            require(s.relpos + len(payload) <= next_start, f'Overlay {index} relocation overflow')
+            if s.relpos + len(payload) > next_start:
+                # A native overlay with no relocation slack is moved whole.
+                # Code and entry offsets stay unchanged; only its FBOV locator
+                # and relocation count change. No neighboring overlay moves.
+                code = bytes(self.data[s.start:s.start + s.size])
+                new_start = len(self.data)
+                self.data.extend(b'\0' * (s.size + len(payload)))
+                self.write(new_start, code, f'Relocate overlay {index} for extra far-call relocations')
+                self.write(s.resident + 4, struct.pack('<I', new_start - self.fbovend),
+                           f'Overlay {index} FBOV locator')
+                for record in manifest:
+                    if record['segment'] == index:
+                        record['file_offset'] = new_start + record['offset']
+                s.start = new_start
+                s.relpos = new_start + s.size
             self.write(s.resident + 10, struct.pack('<H', len(payload)), f'Overlay {index} relocation byte count')
             self.write(s.relpos, payload, f'Overlay {index} relocation table')
+        self.write(self.mzend + 4, struct.pack('<I', len(self.data) - self.fbovend), 'Final FBOV byte count')
         self.parse()
         return manifest
 

@@ -1,152 +1,66 @@
-NATIVE TACTICAL COMBAT 1.1: VALIDATION
-Date: 2026-10-08 UTC
+ULTIMA VII TACTICAL PATCH v1.2: INDEPENDENT VALIDATION
+2026-10-08
 
-RELEASE IDENTITY AND REBUILD
+BASELINE AND SCOPE
+Frozen v1.1 sources reproduce its 713,824-byte U7.EXE byte for byte:
+0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786
+The interrupted v1.2 source changes were absent. All observations below were
+made against this independent implementation, not inherited test claims.
+Only the isolated disposable game copy was mutated during runtime tests.
 
-Pristine U7.EXE: 689,248 bytes
-SHA-256: 4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54
-Release U7.EXE: 713,824 bytes
-SHA-256: 0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786
+ASSEMBLED 16-BIT CODE: PASS
+Python Unicorn executes the actual overlay 336 bytes from the rebuilt U7.EXE.
+Narrow native-service stubs supply allocation, NPC IDs and RNG. Tests cover:
+- Five outgoing/incoming damage factors, native signed 127 cap, zero/negative
+  damage, party/party, nonparty/nonparty and absent-attacker exclusions.
+- Twenty one-point party hits produce 16 actual damage on Hard and 10 on Avatar.
+  Unknown NPC IDs still take minimum one-point damage.
+- All six original RNG bounds, all five settings, before/after original flag 3.
+  Normal passes the unchanged bound; Game Journalist consumes no RNG.
+- Native flag object layout, eligible roster, initialized saved mana, no refill
+  of already initialized mana, separate Avatar/companion mana reads/writes.
+- Correct far-return stack consumption, BP and FS/GS preservation.
+- Fresh book initialization, linked pointers and quality preserved; another
+  item shape left unchanged.
 
-The release rebuilt byte for byte in an independent directory from the frozen
-11 source files and the verified original. The behavior-tested executable was
-4619d9cb9b4c9032275752ad696235446fdc454ec7f75a00ec105714317b0337.
-After those tests, only the hidden control's string was shortened from
-'Paused: Show' to 'Paused Show' to fit the native proportional font. Rebuilding
-with that one colon restored reproduced the behavior-tested executable exactly.
-The final release was separately cold-booted and its complete short label
-visually checked. BUILD.json identifies all 15 guarded patch blocks.
+NATIVE DOSBOX: OBSERVED
+- Five-choice DOS boot selector persists choice and resumes original menu.
+- Original Avatar spellbook opens from tactical Cast.
+- Jaana requires her own book and reagents. With a learned book and reagents,
+  native Light reduces her mana 18 to 17 and leaves +0F/+10 at 0C/0C.
+- The actual Avatar is restored to IBO 0038; active caster is cleared. Casting
+  returns to tactical pause with game clock 10971 unchanged.
+- Clearing original generator flag 3 blocks casting with the story-lock text.
+- Native SaveUI serializes the initialized mana bytes. Native reload restores
+  saved mana 18 after live RAM was set to 3, and Avatar IBO remains 0038.
+- Nystul's new topic and native Yes/No confirmation work. Purchase adds one
+  book and removes exactly 500 gold: party 10192 to 9692.
+- Purchased book data has linear spells FF, no advanced-circle bits, and zero
+  bookmark. Initialization was checked in the native item buffer.
+- Insufficient gold refuses purchase and creates no book. Declining returns to
+  the original conversation and creates no book.
 
-METHOD
+RESOURCES AND INSTALLER: PASS
+All 1012 original Usecode records are retained. Only six merchants change;
+all original operands and branch destinations are preserved. The added shop
+function uses original helpers 90A and 8F8. Rebuilding the two pristine LINKDEP
+files reproduces both byte for byte. Patched transitive closures, sizes and
+file offsets validate against every output record.
 
-Tests ran the original DOS game through its supplied launcher in DOSBox 0.74-3
-with normal core and fixed 12000 cycles. Evidence consists of native VGA
-captures and bounded read-only guest-state samples. All sessions used disposable
-game copies. Test memory dumps, altered test worlds, and host instrumentation
-are not included in either the playable release or the shareable patch.
+The integration suite verifies all five output hashes on clean installation,
+read-only check, idempotent installation, v1.1 upgrade, verified explicit
+original backup, exact five-file uninstall, save/config/preference retention,
+unknown executables and independently modified resources, backup conflicts,
+installation lock, FAT-style backup fallback, replacement failure, and
+rollback after three of five replacements were committed.
 
-CURRENT PANEL AND INPUT CHECKS
-
-The panel measures 180 by 94 pixels, 26.4 percent of the native 320 by 200 view.
-It starts at (4,106), adds no tactical darkening, uses the native small font,
-and clips its text within the window. Its buttons cover selection, Target,
-Melee, Ranged, Move, Hold, Auto, Gear, Hide and Resume.
-
-Mouse party selection, Hold, Auto, Gear, ranged equipment guidance, Hide/Show,
-Tab visibility toggling and mouse Resume passed. Dragging reached (74,45),
-clamped to (0,0) and (140,106), and retained its position across pauses.
-Opening clicks are consumed before native child interfaces receive input.
-
-While hidden for approximately 3.2 seconds, game ticks stayed 10737 -> 10737,
-all eight party item records and tactical records stayed identical, and IRQ
-wall time advanced 9049 -> 9242. Hiding the window therefore did not resume the
-world. Mouse Resume advanced game ticks 10737 -> 10745; Space reopened the
-panel at its remembered (140,106) position.
-
-Escape canceled T, M and G pickers. A right-button press canceled G. Each
-returned through the native cursor-restoration path with the prior order
-retained and simulation still paused. No canceled Move created a route.
-R and I opened the selected member's actual native equipment interface.
-
-COMPANION BUG REPRODUCTIONS AND REPAIR
-
-1. Stale automatic policy, reproduced in delivered v7.
-   Hold during combat captured native schedule 0. Ending combat with C put
-   the Avatar on follow 31 but skipped the held companion on wait 15. Auto
-   then restored stale combat 0. Shamino pursued again; the selected spider's
-   HP fell from 9 to 6. The inverse transition also needed synchronization.
-
-   The new callbacks run after actual native begin/end transitions and keep
-   stored ordinary combat/follow policy current. Actual combat end changes
-   explicit Attack to Hold and clears its target, while preserving existing
-   Hold and owned Move. Current behavior tests repeated both C transitions:
-   Auto restored combat 0 after start and follow 31 after end.
-
-2. Native Avatar movement overrides manual companions, reproduced before
-   the new movement hook.
-   With every actor held, normal right-mouse Avatar movement reset the party
-   to follow inside resident 4:07AB. Held Tseramed took a one-tile step even
-   though his tactical record still said Hold.
-
-   The repair protects manually controlled non-Avatar companions at that
-   reset itself. On the current behavior candidate, the Avatar moved from
-   (1662,1767) to (1672,1767); all seven held companions stayed at the same
-   positions. Spark's separate Move kept route 52328, advanced through
-   (1660,1765), (1668,1772), and (1672,1776), then completed in Hold. The other
-   six held companions stayed fixed. Returning Spark to Auto restored native
-   following while those six remained fixed.
-
-   Spark's live ranged target 304 and combat schedule 0 also survived ordinary
-   Avatar movement. After the target was removed from the native NPC table,
-   his order became Hold without selecting another foe.
-
-ADDITIONAL COVERAGE, WITH BUILD BOUNDARIES
-
-The earlier combat candidate 3031f393f14966e146f310ca29df6b4a579b89678c7e202507a7db4221d08997
-proved that actual C combat end cancels a live target while preserving a Move
-route and existing Holds. It also measured Spark's ranged attack with the
-Avatar held: signed spider HP 9 -> -10 after two resumed seconds. The final
-movement tests above used the newer behavior candidate.
-
-Historical delivered v7 tests measured Avatar attack damage (HP 9 -> -3),
-Tseramed's ranged ammunition use (23 -> 22 -> 20 arrows), target completion,
-active-combat pause, and cold startup. Candidate 6 preceding v7 measured
-Shamino melee damage (HP 9 -> 1), Hold cancellation, and confirmed in-place
-Load with old route release and all nine command records cleared. An actual
-native save with ordinary schedule/attack quality was made under candidate 3
-and subsequently loaded under candidate 6. These historical tests
-are retained as earlier evidence, not described as newly repeated full-release
-coverage. VALIDATION.json records the build identities and separates them.
-
-LIMITS AND RETAINED NATIVE BEHAVIOR
-
-The exact reported offscreen regrouping and apparent teleport were not
-reproduced. Two real command-ownership bugs were reproduced and repaired.
-The original automatic-follow catch-up path was traced separately: resident
-41:21BF admits follow schedule 31 and can call 249:0039 plus coordinate setter
-86:1648 after an offscreen check. No actual teleport was measured in these
-reproductions, and ordinary automatic catch-up remains part of the engine.
-
-Native C start/end tests used the keyboard owner. The other guarded script
-and dialog callers were statically audited, not separately triggered live.
-C retains its original dependence on the Avatar's schedule. If the Avatar is
-explicitly on Hold, return the Avatar to Auto before using C to end ordinary
-combat. This release observes actual native transitions rather than defining
-a new global combat-state model.
-
-Orders remain session state and are cleared on loading; the save format stays
-native. This is targeted scenario validation, not a complete campaign,
-equipment, quest, or emulator-configuration certification. Installer tests
-ran on the Linux host; Windows and macOS command examples were not separately
-executed on those operating systems.
-
-PATCH INSTALLER AND SHARE ARCHIVE
-
-The final installer matrix passed on the exact release hash above:
-
-  - Pristine --check verified the full output without game-file writes.
-  - Clean install produced the exact release and a verified original backup.
-  - The accepted v7 upgraded using its original backup; new progress and
-    existing saves/configuration remained byte-identical.
-  - Already-current install/check were idempotent; direct EXE paths worked.
-  - Uninstall restored the exact pristine EXE and retained saves and backups.
-  - Missing original, unknown EXE, conflicting backup, and a concurrent lock
-    were refused before executable replacement.
-  - An explicit verified original allowed an upgrade without a local backup.
-  - The exclusive-create fallback for filesystems without hard links worked.
-  - A simulated replacement failure retained the original EXE, its verified
-    backup, and left no stale installer lock.
-
-Fresh source extracted from the patch ZIP rebuilt byte for byte to the
-frozen release. Running the packaged generator with its default source also
-reproduced it. ZIP member hashes and CRCs passed, and the content audit found
-only patch objects, eleven source files, installer/build tools, and reports.
-The archive has no game executable, copied original overlay, assets, saves,
-configuration, screenshot, Python cache, or private test input.
-
-Generator path guards refused source/input destruction, unmarked existing
-output directories, and an archive inside its own distribution directory.
-A deliberately induced ZIP-integrity failure did not publish over a previous
-archive. The final ZIP was regenerated after adding these report summaries;
-its executable and source identities remained fixed, and member hashes and
-CRCs were checked again before release.
+LIMITS
+This is focused native and machine-code verification, not a complete campaign
+playthrough. Nystul was the end-to-end native purchase case; the other merchants
+received structural checks. SaveUI was invoked through a disposable fixture
+for serialization testing; every nested save/load/cancel flow was not replayed.
+All five combat settings were tested in assembled-code emulation; full native
+encounters on all five settings were not replayed. Old v1.1 runtime scenarios
+were not all repeated. Current identities and full machine-code/installer
+results are in BUILD.json and VALIDATION.json. No game data or screenshots
+are distributed with the patch.

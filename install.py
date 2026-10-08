@@ -211,6 +211,117 @@ def replace_executable(exe_path, expected_before, output):
 
 def install(target=".", *, check=False, uninstall=False, original_path=None):
     info, native, objects = load_distribution()
+    if info.get('assets'):
+        return install_complete(target,check=check,uninstall=uninstall,original_path=original_path,
+                                info=info,native=native,objects=objects)
+    return install_legacy(target,check=check,uninstall=uninstall,original_path=original_path)
+
+
+def install_complete(target, *, check, uninstall, original_path, info, native, objects):
+    exe = locate_executable(target)
+    base = exe.parent
+    backup_dir = base/BACKUP_DIR
+    require(not backup_dir.is_symlink(), 'Backup folder must be a real folder.')
+    require(not backup_dir.exists() or backup_dir.is_dir(), 'Backup folder path is a file.')
+    spec = importlib.util.spec_from_file_location('tactical_asset_patcher', ROOT/'source/asset_patcher.py')
+    assets = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(assets)
+    rec = info['menu_payload']
+    packed = base64.b64decode(rec['zlib_base64'],validate=True)
+    dec = zlib.decompressobj()
+    payload = dec.decompress(packed,100001)
+    require(len(payload)==rec['size'] and len(payload)<=100000 and dec.eof and not dec.unused_data
+            and sha(payload)==rec['sha256'], 'Damaged native menu payload.')
+    operations = []
+    expected_assets = {'MAINMENU.EXE':'MAINMENU.ORI','STATIC/USECODE':'USECODE.ORI',
+                       'STATIC/LINKDEP1':'LINKDEP1.ORI','STATIC/LINKDEP2':'LINKDEP2.ORI'}
+    require(len(info['assets'])==4 and {r['path']:r['backup'] for r in info['assets']}==expected_assets,
+            'Invalid native asset manifest.')
+    patched_usecode = None
+    records = [{'path':exe.name,'backup':BACKUP_NAME,'original':info['original'],'output':info['output']}] + info['assets']
+    for record in records:
+        relative = Path(record['path'])
+        require(not relative.is_absolute() and '..' not in relative.parts, 'Invalid game asset path.')
+        # Find native DOS names without assuming a case-sensitive host layout.
+        path = base
+        for part in relative.parts:
+            require(path.is_dir() and not path.is_symlink(), 'Game path must use real directories.')
+            matches_ = [p for p in path.iterdir() if p.name.casefold()==part.casefold()]
+            require(len(matches_)==1, f'Cannot find {record["path"]}.')
+            path = matches_[0]
+        require(path.is_file() and not path.is_symlink(), f'Invalid game file {record["path"]}.')
+        current = path.read_bytes()
+        backup = backup_dir/record['backup']
+        if matches(current,record['original']):
+            original = current
+            if record['backup']==BACKUP_NAME and original_path is not None:
+                original = read_original(path,current,info,original_path)
+        elif matches(current,record['output']):
+            require(backup.is_file() and not backup.is_symlink(), f'Missing original backup for {record["path"]}.')
+            original = backup.read_bytes()
+        elif record['backup']==BACKUP_NAME and any(matches(current,x) for x in info['accepted_previous']):
+            original = read_original(path,current,info,original_path)
+        else:
+            raise InstallError(f'Unsupported or independently modified {record["path"]}. No game files were changed.')
+        require(matches(original,record['original']), f'Original backup verification failed: {record["path"]}.')
+        if backup.exists() or backup.is_symlink():
+            require(backup.is_file() and not backup.is_symlink() and backup.read_bytes()==original,
+                    f'Conflicting backup for {record["path"]}. No game files were changed.')
+        if uninstall:
+            replacement = original
+        elif record['backup']==BACKUP_NAME:
+            replacement = prepare_output(original,info,native,objects)
+        elif record['path']=='MAINMENU.EXE':
+            replacement = assets.patch_menu(original,payload)
+        elif record['path']=='STATIC/USECODE':
+            replacement = assets.patch_usecode(original)
+            patched_usecode = replacement
+        else:
+            require(patched_usecode is not None, 'Invalid dependency table order.')
+            replacement = assets.link_dependencies(patched_usecode)[int(record['path'][-1])-1]
+        require(matches(replacement,record['original'] if uninstall else record['output']),
+                f'Rebuilt output verification failed: {record["path"]}.')
+        operations.append((path,current,original,replacement,backup))
+    if check:
+        print(f'All five files verified for Tactical {info["version"]}. No game files were changed.')
+        return 0
+    changes = [x for x in operations if x[1]!=x[3]]
+    if not changes:
+        print('The requested version is already installed. Nothing changed.')
+        return 0
+    backup_dir.mkdir(exist_ok=True)
+    lock = backup_dir/'INSTALL.lock'
+    try:
+        descriptor = os.open(lock,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
+    except FileExistsError as error:
+        raise InstallError('Another installation may be running. Check TACTICAL-PATCH/INSTALL.lock.') from error
+    completed = []
+    try:
+        with os.fdopen(descriptor,'w') as stream:
+            stream.write(str(os.getpid())+'\n')
+        for path,current,original,replacement,backup in operations:
+            require(path.read_bytes()==current, f'{path.name} changed during installation.')
+            if not uninstall:
+                store_backup(backup,original)
+        for operation in changes:
+            path,current,original,replacement,backup = operation
+            replace_executable(path,current,replacement)
+            completed.append(operation)
+    except BaseException:
+        # Roll back replacements already committed if a later replacement
+        # fails. Originals are retained, so a terminated run is repairable.
+        for path,current,original,replacement,backup in reversed(completed):
+            replace_executable(path,replacement,current)
+        raise
+    finally:
+        lock.unlink(missing_ok=True)
+    print('Restored all five verified original files.' if uninstall else
+          f'Installed Tactical {info["version"]}. Start through ULTIMA7.COM as usual.')
+    return 0
+
+
+def install_legacy(target=".", *, check=False, uninstall=False, original_path=None):
+    info, native, objects = load_distribution()
     exe_path = locate_executable(target)
     current = exe_path.read_bytes()
     if uninstall:

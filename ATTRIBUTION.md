@@ -11,3 +11,5 @@ The tactical command code, panel, native wrappers, bounded Python patcher, and p
 
 `source/include/weapon_types.inc` contains generated numeric shape/category constants used to validate native equipment, with the source data's hash in its comment. `source/native_patcher.py` contains short expected-instruction guards and native format information. These implementation facts and patch substitutions are distinct from distributing an original executable or an original game-data file.
 
+
+The v1.2 research also consulted the primary Exult source for native Usecode opcode meanings, intrinsic signatures, spellbook layout and LINKDEP format. The parser, insertion code and dependency-table implementation in this package are independently written. No Exult runtime or copied Exult implementation is bundled. Reference: https://github.com/exult/exult (tools/ucformat.txt, tools/mklink.cc and usecode).

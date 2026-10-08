@@ -206,6 +206,8 @@ tactical_handle_key:
     je .automatic
     cmp ax, 'i'
     je .inventory
+    cmp ax, 'c'
+    je .cast
     xor ax, ax
     jmp .return
 .target:
@@ -222,6 +224,9 @@ tactical_handle_key:
     jmp .handled
 .inventory:
     call tactical_open_inventory
+    jmp .handled
+.cast:
+    call v12_open_spellbook
 .handled:
     mov ax, 1
 .return:

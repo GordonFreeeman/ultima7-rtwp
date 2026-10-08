@@ -1,15 +1,175 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "original": {
     "size": 689248,
     "sha256": "4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54",
     "description": "English Ultima VII: The Black Gate 3.4 / Forge of Virtue"
   },
   "output": {
-    "size": 713824,
-    "sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786"
+    "size": 716148,
+    "sha256": "53bb9c174ec04959777a494cfb788365df5e2d35d0e38cbcb24cadae60173d51"
   },
+  "assets": [
+    {
+      "path": "MAINMENU.EXE",
+      "backup": "MAINMENU.ORI",
+      "original": {
+        "size": 127116,
+        "sha256": "73d88ccdb103ee3c6ead70e64ed41eefa9312875ded98d93829979e2a511f43c"
+      },
+      "output": {
+        "size": 131224,
+        "sha256": "6cccc4599160adb25ae8d0c80e1bbd96483b05fbab993171bcd1358d0de1b960"
+      }
+    },
+    {
+      "path": "STATIC/USECODE",
+      "backup": "USECODE.ORI",
+      "original": {
+        "size": 1521368,
+        "sha256": "49a3fcaf8a763972d0a6006571e8d8eef11eb1602f88898808b520523d0a8576"
+      },
+      "output": {
+        "size": 1521888,
+        "sha256": "98e1db873e2601ac11d7154931725ab296b48447fa22baf4652f9280a85daf5b"
+      }
+    },
+    {
+      "path": "STATIC/LINKDEP1",
+      "backup": "LINKDEP1.ORI",
+      "original": {
+        "size": 9556,
+        "sha256": "7f8c60be31b537cd3d1455b2b5ca290edd654df4e9a5c6c9e1b87dd5ff57a570"
+      },
+      "output": {
+        "size": 11272,
+        "sha256": "9bc4c8d7dea56f7e56c465f9a5d61c2bfc685a632e917046a3649c23a522eae7"
+      }
+    },
+    {
+      "path": "STATIC/LINKDEP2",
+      "backup": "LINKDEP2.ORI",
+      "original": {
+        "size": 20140,
+        "sha256": "c5bbf242aa1dc5a94eb8c3056e174cf9489388a6ab279c9dfc968e454491fdcb"
+      },
+      "output": {
+        "size": 20176,
+        "sha256": "a7d9ab8180680352dfc71e37f5ea0dc5fe64491e1ef00fce5e334cc2ed5a07ed"
+      }
+    }
+  ],
   "patch_blocks": [
+    {
+      "patch": "native-tactical-pause",
+      "segment": 86,
+      "offset": 7387,
+      "file_offset": 191819,
+      "length": 6,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 8,
+      "file_offset": 374072,
+      "length": 6,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 10255,
+      "file_offset": 384319,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 10333,
+      "file_offset": 384397,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 15241,
+      "file_offset": 389305,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 8583,
+      "file_offset": 382647,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 10616,
+      "file_offset": 384680,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 219,
+      "offset": 10727,
+      "file_offset": 384791,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 215,
+      "offset": 444,
+      "file_offset": 714268,
+      "length": 6,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 215,
+      "offset": 825,
+      "file_offset": 714649,
+      "length": 6,
+      "relocations": [
+        3
+      ]
+    },
+    {
+      "patch": "native-tactical-pause",
+      "segment": 215,
+      "offset": 862,
+      "file_offset": 714686,
+      "length": 5,
+      "relocations": [
+        3
+      ]
+    },
     {
       "patch": "native-tactical-pause",
       "segment": 30,
@@ -156,102 +316,123 @@
       "segment": 336,
       "offset": 3456,
       "file_offset": 692704,
-      "length": 6276,
+      "length": 7677,
       "relocations": [
         84,
         121,
-        175,
-        236,
-        360,
-        383,
-        407,
-        461,
-        536,
-        554,
-        560,
-        587,
-        596,
-        632,
-        662,
-        674,
-        834,
-        901,
-        958,
-        1110,
-        1144,
-        1157,
-        1210,
-        1228,
-        1267,
-        1321,
-        1327,
-        1380,
-        1398,
-        1412,
-        1430,
-        1444,
-        1453,
-        1485,
-        1500,
-        1541,
-        1597,
-        1669,
-        1740,
-        1827,
-        1869,
-        1886,
-        1940,
-        1982,
-        1999,
-        2056,
-        2121,
-        2274,
-        2292,
-        2349,
-        2457,
-        2469,
-        2477,
-        2482,
-        2487,
-        2567,
-        2590,
-        2608,
-        2660,
-        2723,
-        2741,
-        2755,
-        2774,
-        2844,
-        3025,
-        3043,
-        3113,
-        3456,
-        4357,
-        4368,
-        4458,
-        4506,
-        4949,
-        5065,
-        5169,
-        5181,
-        5570,
-        5669,
-        5687,
-        5757
+        178,
+        245,
+        485,
+        508,
+        532,
+        586,
+        661,
+        679,
+        685,
+        712,
+        721,
+        757,
+        787,
+        799,
+        959,
+        1026,
+        1083,
+        1245,
+        1279,
+        1292,
+        1345,
+        1363,
+        1402,
+        1456,
+        1462,
+        1515,
+        1533,
+        1547,
+        1565,
+        1579,
+        1588,
+        1620,
+        1635,
+        1676,
+        1732,
+        1804,
+        1875,
+        1962,
+        2004,
+        2021,
+        2075,
+        2117,
+        2134,
+        2191,
+        2256,
+        2409,
+        2427,
+        2484,
+        2592,
+        2604,
+        2612,
+        2617,
+        2622,
+        2702,
+        2725,
+        2743,
+        2795,
+        2858,
+        2876,
+        2890,
+        2909,
+        2979,
+        3160,
+        3178,
+        3248,
+        3591,
+        4492,
+        4503,
+        4593,
+        4641,
+        5084,
+        5200,
+        5304,
+        5316,
+        5705,
+        5804,
+        5822,
+        5892,
+        6555,
+        6833,
+        6863,
+        7020,
+        7195,
+        7212,
+        7321,
+        7340,
+        7356,
+        7388,
+        7430,
+        7442,
+        7450,
+        7455,
+        7460,
+        7531,
+        7538
       ]
     }
   ],
   "source_sha256": {
-    "commands.inc": "22e348597b000561f2a1a831435554a397b11fb5504e0eb1e775256bf58eac91",
+    "asset_patcher.py": "04f6392e30d0e7378d558a029574ada892d937a14c4b52f6738b5ba58d64a744",
+    "commands.inc": "bd0e2a4437edf10db95badeaa7351920c762ff4edae54db30e19d7d0849be003",
     "include/common.asm": "8b76f52fe8b0476d40587020c1afe1c922f37c66cddd6240abe8f723f8c5f72a",
     "include/constants.asm": "ef2264da24e67f2cbb572212effb0c88371726f8dfa5b95a365710d50c500fe2",
     "include/patch_macros.asm": "a578f3b78250c04c6d48f9bade92f304e1db8bf15da5ec53197819b4bf2ee85e",
     "include/segments.asm": "da89b91043a67e5d9a94769368d01fb9bfd9843f7e290e7998fc5c34284611a7",
     "include/u7bg.asm": "085b9d72d113e25d585586466b4b63966b0ed3830b0d8051df7f1e3c627211f0",
     "include/weapon_types.inc": "afba16acd36c9e7ae610946a05258bedb82f6352d191dda760782c8716a9cdaa",
-    "native_patcher.py": "240e1a70d46bc4e0a208f425b6fe3b9db3245c4c7e1af3d44cf1be9f1e6ab71e",
-    "panel.inc": "44fa9c4b3c04d19db05b8fb91ad4b4805e716b55bf44c83e14b1067059ad3608",
-    "pause.asm": "3a1334b574ce46bdc80a20c5b4ba5a4c0d26cbbd0fc19fbe5b8370731a765ddd",
+    "menu/menu.asm": "a3d1725a9a42912c6d32aad8d2dfa18a866bd36f8a56a82f8cbefd40f8d6d8ef",
+    "native_patcher.py": "a6b5054223a19bd08633b81c8200aed7d8d2a5fa140e05148fff7e862a7f5b90",
+    "panel.inc": "87926624b6d91c5b99ee3b640c7d3eb40824fdffdff7549f8c751e7044942cdc",
+    "pause.asm": "4c29f7f0484bda6cb86db5d585183f7545eff29093bffc7d9ba1e44d1d16b947",
+    "v12-state.inc": "35f55f8c555cfcb882489ab113561f1e62e92ddb276b2768daae35a10eb90ae8",
+    "v12.inc": "8f51692e07cc70a352b4499cb5933b301c28900c5be5e77e1ddb16d397acf635",
     "weapons.inc": "a9ac41b9ed5bd268f55389b304dd0654f247cb3a344cc60267ad0af50de9f98c"
   },
   "distribution_contents": "source, replacement patch objects, installer, documentation, license notice",

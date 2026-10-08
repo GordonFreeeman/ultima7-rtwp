@@ -1,3 +1,11 @@
+V1.2 ADDENDUM
+
+See HANDOVER.md for the five-file build, damage/RNG hooks, original flag 3,
+companion mana offsets, caster context, menu entry and Usecode dependency
+rebuild. The following material is retained as historical v1.1 research;
+its installation-only-U7 descriptions do not describe the v1.2 installer.
+Earlier v1.1 runtime claims were not adopted as v1.2 test results.
+
 NATIVE TACTICAL COMBAT 1.1: REVERSE ENGINEERING NOTES
 
 1. SUPPLIED BUILD

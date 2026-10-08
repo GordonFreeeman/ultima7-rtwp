@@ -1,4 +1,4 @@
-# Programmer handover: tactical orders and pause lifecycle
+# Programmer handover: Tactical Patch v1.2
 
 This native DOS modification demonstrates a tactical command layer for individual party members in Ultima VII: The Black Gate. Anthony can inspect `commands.inc` for the order state model, `panel.inc` for the pause interface, and `pause.asm` for lifecycle ownership, then implement those behaviors through the remake's actor, path, combat, UI, and save/load APIs. The executable addresses, segmented-memory conventions, register preservation, and Borland overlay hooks are specific to the supported DOS build.
 
@@ -73,7 +73,7 @@ For a new engine, a world generation identifier on entity handles can make stale
 - `source/native_patcher.py` parses the supported MZ/FBOV file, expands a loader-managed overlay, applies guarded patch blocks, and repairs relocation metadata.
 - `install.py` applies preassembled objects without requiring NASM. Original overlay code and relocations are copied from the recipient's own pristine executable at installation time.
 
-The patch does not replace usecode, assets, pathfinding, save files, the original combat calculation, or the game launcher. Its native code references documented routines and fixed addresses for one hash-identified executable. Porting those offsets to another executable or treating them as stable interfaces is unsafe.
+The v1.2 patch retains the native engine, pathfinding, save format and ULTIMA7.COM launcher. It patches native damage inputs, MAINMENU.EXE and the merchant Usecode functions with their two dependency tables. Its native code references documented routines and fixed addresses for one hash-identified executable. Porting those offsets to another executable or treating them as stable interfaces is unsafe.
 
 ## Useful acceptance scenarios in another engine
 
@@ -88,3 +88,32 @@ Start and end ordinary combat while an actor holds or moves. Returning it to aut
 Save and cancel while moving and attacking; pending session commands should resume. Load both through the inventory/save modal and a fresh launcher process; commands should clear and no old-world route may be released after the heap has been replaced. Remove a commanded companion through a native story event and verify that the script's departure behavior remains in control.
 
 The distribution's build identity does not substitute for these runtime observations. Review the release's separate validation report if provided by its author.
+
+
+## v1.2 difficulty and magic implementation
+
+`v12.inc` owns the new mechanics. `v12-state.inc` reserves DS:1064..106E within the audited build-stamp space. A D2 signature initializes the boot difficulty (0..4, default 2), near damage ledger, active caster, mana tick and modal load marker. The menu and engine use the same one-byte TACTIC.DIF file.
+
+The 219:0008 damage hook borrows the native caller BP and modifies only its positive signed damage byte. Party membership uses actual IBOs. Enemy incoming damage uses inverse factors with a near heap remainder indexed by NPC ID; enemy outgoing damage uses factors 25/75/100/125/200. The ledger is cleared on restoration and never saved. Unknown actor IDs and allocation failure fall back to a minimum one-point hit.
+
+Six RNG sites in overlay 219 own innate teleportation, invisibility and summoning. Game Journalist returns a failing sentinel without consuming RNG. Other settings consult original global flag 3. Normal passes the exact native bounds and preserves the original RNG stream. The native flags object is inline at DS:5F9C, with the far flags pointer at +4, count at +8 and flag 3 in first-byte bit 10h. Treating DS:5F9A as a near object pointer is incorrect.
+
+Caster IDs are Jaana 5 and Mariah 153. C uses a synchronous native spellbook modal and temporarily makes DS:4C0C refer to the selected companion, so original spell Usecode Avatar references resolve to the caster. No simulation step runs in the book modal. The true Avatar is restored on return and before native save UI. Confirmed load clears caster state and prevents the old IBO being restored into the new world.
+
+Companion mana occupies unused bytes +0D (80h initialization marker plus capacity) and +0E (current mana) in the original 105-byte NPC buffer. Native +0F/+10 are identity/flags and are never repurposed. Two native mana reads and the write in overlay 215 switch to +0E during a companion cast. The write hook uses retf 2 to consume the original pushed mana value exactly. FS/GS unreal-mode caches are preserved. Saved mana uses native U7NBUF.DAT serialization, without a new save format.
+
+The added far calls exhaust overlay 215's original relocation tail. The bounded patcher relocates its entire unchanged-offset code image to the end of FBOV with a larger relocation table and repairs its descriptor. Overlay 336 remains the loader-owned extension. Hooks dispatch by guarded private return sites before adding a wrapper frame.
+
+## v1.2 menu and merchant resources
+
+`menu/menu.asm` is our own BIOS/DOS 80x25 selector placed beyond original MAINMENU code, BSS and temporary stack. It preserves registers and computes the original CS from a paragraph delta, then resumes the original entry. The original menu's self-size check is retained and updated to the deliberate new size. This selector precedes the graphical menu.
+
+`asset_patcher.py` preserves all original Usecode records except the six named merchants. It appends a string and an extern to each and inserts a self-contained conversation case. All original branch destinations are remapped by instruction boundary. Own function B00 calls the original Yes/No (90A) and purchase helper (8F8), charging 500 gold with native capacity and funds checks.
+
+Every inserted Usecode byte shifts later file offsets. Both LINKDEP tables must therefore be rebuilt: sorted transitive extern closures, total body sizes and four-byte file offsets. Reconstructing the original tables matches both pristine files byte for byte. Shipping a modified USECODE with old LINKDEP tables crashes the DOS VM.
+
+Fresh native spellbook allocations retain free-list bytes unless initialized. The guarded resident 86:1CDB hook initializes only newly allocated shape 761: circle 0 FF, circles 1..11 zero and bookmark zero, preserving linked block pointers and quality. Existing books are never cleared; native deserialization supplies existing learned data.
+
+The distribution carries our code and resource algorithms, not original functions or tables. The installer validates all five original and output identities before mutations, makes exclusive verified backups, atomically replaces each file and rolls back earlier replacements if a later one fails. Abrupt process termination across five files cannot be made a single filesystem transaction; rerunning against verified backups repairs partial installation.
+
+Tests are supplied under tests. `test_assets.py --game-root <pristine-folder>` checks preservation and dependency reconstruction. `test_install.py` accepts distribution, pristine original, previous v1.1, pristine asset folder and report paths. `test_native.py` requires a locally rebuilt build/U7-V12.EXE and Python unicorn; it executes actual assembled 16-bit code with narrow native service stubs. Native DOSBox fixtures used during development were disposable and are excluded from the package.

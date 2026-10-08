@@ -1,4 +1,4 @@
-; Native U7BG 3.4 tactical pause. No replacement engine or resource edits.
+; Native U7BG 3.4 tactical pause and v1.2 mechanics. Original DOS engine.
 ; The wrapper owns only the world keyboard/mouse poll call (31:0FAB).
 ; Ordinary keys still run the original native reader without consumption.
 %include "include/common.asm"
@@ -20,8 +20,52 @@
 defineAddress 340, 0x00B1, tactical_native_save_ui
 defineAddress 254, 0x002A, tactical_native_restore
 defineAddress 62, 0x02D9, panel_native_reset_action
+%include "v12-state.inc"
 
 startPatch EXE_LENGTH, native-tactical-pause
+
+  ; The original allocator retains free-list bytes in newly created books.
+  ; Initialize fresh allocations; native deserialization retains learned data.
+  startBlockAt 86, 0x1CDB
+    callFromLoadModule tactical_tick_entry
+    nop
+  endBlockOfLength 6
+
+  startBlockAt 219, 0x0008
+    callFromOverlay tactical_tick_entry
+    nop
+  endBlockOfLength 6
+
+  startBlockAt 219, 0x280F
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
+  startBlockAt 219, 0x285D
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
+  startBlockAt 219, 0x3B89
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
+  startBlockAt 219, 0x2187
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
+  startBlockAt 219, 0x2978
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
+  startBlockAt 219, 0x29E7
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
+
+  startBlockAt 215, 0x01BC
+    callFromOverlay tactical_tick_entry
+    nop
+  endBlockOfLength 6
+  startBlockAt 215, 0x0339
+    callFromOverlay tactical_tick_entry
+    nop
+  endBlockOfLength 6
+  startBlockAt 215, 0x035E
+    callFromOverlay tactical_tick_entry
+  endBlockOfLength 5
 
   ; Replace the game's per-step keyboard discard with the command-policy tick.
   ; An opening Space survives until the original world input owner gets it.
@@ -194,6 +238,7 @@ pause_save_ui_far:
     pushad
     push ds
     push es
+    call v12_suspend_caster
     call tactical_commands_suspend_all
     pop es
     pop ds
@@ -215,6 +260,7 @@ pause_save_ui_far:
 .release:
     call tactical_commands_release_all
 .restored:
+    call v12_resume_caster
     pop es
     pop ds
     popad
@@ -229,6 +275,7 @@ pause_restore_far_body:
     push ds
     push es
     ; Free only our old routes while the old world still owns the heap.
+    call v12_before_restore
     call tactical_commands_release_all
     pop es
     pop ds
@@ -254,6 +301,33 @@ pause_restore_far_body:
     retf
 
 pause_tick_far:
+    ; Private return sites are checked before adding a wrapper frame, because
+    ; the damage hook deliberately borrows its native caller's BP.
+    push bx
+    mov bx, sp
+    cmp word [ss:bx+2], 0x1CE0
+    je v12_new_book_dispatch
+    cmp word [ss:bx+2], 0x000D
+    je v12_damage_dispatch
+    cmp word [ss:bx+2], 0x2814
+    je v12_rng_dispatch
+    cmp word [ss:bx+2], 0x2862
+    je v12_rng_dispatch
+    cmp word [ss:bx+2], 0x3B8E
+    je v12_rng_dispatch
+    cmp word [ss:bx+2], 0x218C
+    je v12_rng_dispatch
+    cmp word [ss:bx+2], 0x297D
+    je v12_rng_dispatch
+    cmp word [ss:bx+2], 0x29EC
+    je v12_rng_dispatch
+    cmp word [ss:bx+2], 0x01C1
+    je v12_mana_read_dispatch
+    cmp word [ss:bx+2], 0x033E
+    je v12_mana_read_dispatch
+    cmp word [ss:bx+2], 0x0363
+    je v12_mana_write_dispatch
+    pop bx
     push bp
     mov bp, sp
     pushfd
@@ -279,6 +353,7 @@ pause_tick_far:
     push es
     ; Do not reload FS/GS: Ultima's unreal-mode cached segment limits belong
     ; to its native Voodoo manager. The tick uses native memory access helpers.
+    call v12_tick
     call tactical_command_tick
     pop es
     pop ds
@@ -480,6 +555,7 @@ pause_print_line:
 
 %include "commands.inc"
 %include "panel.inc"
+%include "v12.inc"
 
   endBlock
 endPatch
