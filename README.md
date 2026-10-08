@@ -100,8 +100,4 @@ python build_distribution.py --original "/path/to/your/pristine/U7.EXE" --source
 
 Use `--expected "/path/to/your/final/U7.EXE"` to require exact reproduction of an independently built candidate. A release should be built from stable sources after its native runtime checks. `BUILD.json` describes the generated output and patch blocks; it is a build record, not a claim of complete campaign testing.
 
-## What to share
-
-Share the complete patch ZIP. Recipients install it into their own matching game. Keep the full-game archive, original and modified executables, backups, and personal saves out of the patch ZIP. `HANDOVER.md` describes the behavior and state lifecycle for programmers interested in implementing a similar feature in another engine.
-
 The native mappings and patch metadata macros come from John Glassmyer's MIT-licensed UltimaHacks. The retained notice and scope of attribution are in `LICENSE-UPSTREAM.txt` and `ATTRIBUTION.md`.
