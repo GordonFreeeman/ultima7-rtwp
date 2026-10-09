@@ -1,12 +1,12 @@
-# Ultima VII Tactical Patch v1.2
+# Ultima VII Tactical Patch v1.2.2
 
-Independent competition build for the original English DOS Black Gate 3.4 with Forge of Virtue. Includes the v1.1 tactical controls, five difficulty choices, companion spellcasting, and merchant spellbooks. Start through ULTIMA7.COM in your existing DOS setup. Install on the host computer using Python 3.10 or later; NASM is needed only to rebuild modified source.
+Mouse input and selection-highlight correction to v1.2.1 for the original English DOS Black Gate 3.4 with Forge of Virtue. Includes the v1.1 tactical controls, five difficulty choices, companion spellcasting, and merchant spellbooks. Start through ULTIMA7.COM in your existing DOS setup. Install on the host computer using Python 3.10 or later; NASM is needed only to rebuild modified source.
 
-The ZIP contains source, preassembled patch objects, installer, tests and documentation. Each game file is reconstructed from the recipient's own matching original. No game executable, original resource, save or screenshot is included.
+This source-and-installer directory contains source, preassembled patch objects, installer, tests and documentation. Each game file is reconstructed from the recipient's own matching original. This directory contains no game executable, original resource, save or screenshot. The enclosing full-game or update archive provides its own README and game files.
 
 ## Difficulty
 
-Before the original graphical menu, a native DOS selector accepts 1 to 5. Enter accepts the current selection; Esc also continues with it. Normal is the default. The selection is stored in TACTIC.DIF in the game folder and applies to the next loaded or new game in that process. Restart through ULTIMA7.COM to change it.
+The original graphical main menu now contains a Difficulty setting alongside Start New Game and Journey Onward. Click anywhere across the displayed Difficulty label, or use Up/Down and Enter, to cycle through the five choices. The row highlights when selected with the mouse or keyboard; the current choice appears in its label. Normal is the default. The selection is stored in TACTIC.DIF in the game folder and applies to the next loaded or new game in that process. Restart through ULTIMA7.COM to return to this menu and change it.
 
 | Choice | Enemy effective durability | Enemy outgoing damage | Powerful native abilities |
 | --- | ---: | ---: | --- |
@@ -38,7 +38,7 @@ New books contain the eight ordinary linear spells and no advanced spells. Advan
 
 ## Tactical controls
 
-Press Space in the world view to open the compact, 180 by 94 pixel tactical panel, initially at the bottom left of the native screen. Click its party numbers and command buttons, or use the corresponding keys. Drag the title bar to move the panel; its position remains within the screen and is remembered during the running game.
+Press Space in the world view to open the 216 by 120 pixel tactical panel, initially at the bottom left of the native screen. Its command buttons are 64 by 14 pixels, with padding around their labels and gaps between rows and columns. Click its party numbers and command buttons, or use the corresponding keys. Drag the title bar to move the panel; its position remains within the screen and is remembered during the running game. Gaps between controls are inactive.
 
 | Key or control | Action |
 | --- | --- |
@@ -77,9 +77,9 @@ On Linux or macOS use python3 and your game path. The only supported pristine U7
 
 Exact original resource hashes and all release hashes are in BUILD.json. Other languages, editions and independent changes are rejected.
 
-The installer changes U7.EXE, MAINMENU.EXE, STATIC/USECODE, STATIC/LINKDEP1 and STATIC/LINKDEP2. It prepares and verifies all five before writing and saves verified originals in TACTICAL-PATCH. Saves, configuration, launcher and difficulty preference are retained. --check makes no game writes. Repeated installation is idempotent.
+The installer prepares and verifies U7.EXE, MAINMENU.EXE, STATIC/USECODE, STATIC/LINKDEP1 and STATIC/LINKDEP2 before writing, and saves verified originals in TACTICAL-PATCH. When upgrading the accepted v1.2.1 build, only MAINMENU.EXE changes. The earlier independent v1.2 build upgrades through U7.EXE and MAINMENU.EXE. Saves, configuration, launcher and difficulty preference are retained. --check makes no game writes. Repeated installation is idempotent.
 
-Exact tactical v1.1 and the older v7 are accepted when a pristine U7.ORI exists in TACTICAL-PATCH or TACTICAL. If your verified original is elsewhere:
+The supplied independent v1.2, exact tactical v1.1 and the older v7 are accepted when their verified pristine originals are available. Both recognized v1.2 and v1.2.1 menu upgrades use TACTICAL-PATCH/MAINMENU.ORI, already included in the full game. Pristine U7.ORI can be in TACTICAL-PATCH or TACTICAL. If your verified original executable is elsewhere:
 
 ```text
 python install.py "C:\Games\Ultima7\Blackgat" --original "C:\Backups\U7.ORI"
@@ -104,9 +104,9 @@ python source/native_patcher.py "/path/to/pristine/U7.EXE" "U7.REBUILT.EXE" --so
 Append --nasm with its full path if needed. Create a full patch package, rebuilding the menu and Usecode dependency tables:
 
 ```text
-python build_distribution.py --original "/path/to/pristine/U7.EXE" --mainmenu "/path/to/pristine/MAINMENU.EXE" --usecode "/path/to/pristine/STATIC/USECODE" --expected "U7.REBUILT.EXE" --source source --version 1.2 --output release --archive Tactical-Patch-1.2.zip
+python build_distribution.py --original "/path/to/pristine/U7.EXE" --mainmenu "/path/to/pristine/MAINMENU.EXE" --usecode "/path/to/pristine/STATIC/USECODE" --expected "U7.REBUILT.EXE" --source source --version 1.2.2 --output release --archive Tactical-Patch-1.2.2.zip
 ```
 
-The pristine LINKDEP1 and LINKDEP2 must be beside USECODE. The builder verifies them against a byte-identical reconstruction. Installation itself uses the bundled compiled patch objects and requires no assembler.
+The pristine LINKDEP1 and LINKDEP2 must be beside USECODE. The builder also accepts the full game's TACTICAL-PATCH/USECODE.ORI directly, using its adjacent LINKDEP1.ORI and LINKDEP2.ORI backups. It verifies both against a byte-identical reconstruction. Installation itself uses the bundled compiled patch objects and requires no assembler.
 
 VALIDATION.txt describes observed DOSBox checks and their limits. This release has focused native and machine-code verification, not a complete campaign playthrough. HANDOVER.md and REVERSE_ENGINEERING.txt explain the implementation. Share the entire patch ZIP, keeping your game and saves separate. Source attribution and the retained upstream notice are in ATTRIBUTION.md and LICENSE-UPSTREAM.txt.

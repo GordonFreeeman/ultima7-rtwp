@@ -1,12 +1,36 @@
-; Compact native tactical window. Every pixel and glyph is drawn by the game's
+; Native tactical window. Every pixel and glyph is drawn by the game's
 ; native surface/text consumers. No custom INT33 coordinate conversion, shape
 ; replacement, simulation step, or FS/GS manipulation is introduced here.
-%assign Panel_WIDTH 180
-%assign Panel_HEIGHT 94
+; FONTS.VGA font 2 has zero native character spacing. Its widest command labels
+; are "T Target" (52 px) and "R Ranged" (53 px); use 64 px framed controls with
+; 5 px text insets. The 8 px glyph cell is clear of both borders in 14 px rows.
+%assign Panel_WIDTH 216
+%assign Panel_HEIGHT 120
+%assign Panel_INITIAL_X 4
+%assign Panel_INITIAL_Y (200-Panel_HEIGHT-4)
+%assign Panel_TITLE_X 3
+%assign Panel_TITLE_Y 3
+%assign Panel_TITLE_HEIGHT 14
+%assign Panel_HIDE_WIDTH 60
+%assign Panel_HIDE_X (Panel_WIDTH-6-Panel_HIDE_WIDTH)
+%assign Panel_PARTY_X 6
+%assign Panel_PARTY_Y 48
+%assign Panel_PARTY_WIDTH 21
+%assign Panel_PARTY_HEIGHT 12
+%assign Panel_PARTY_PITCH 22
+%assign Panel_PARTY_COUNT 9
+%assign Panel_BUTTON_WIDTH 64
+%assign Panel_BUTTON_HEIGHT 14
+%assign Panel_BUTTON_TEXT_X 5
+%assign Panel_BUTTON_TEXT_Y 2
+%assign Panel_BUTTON_COLUMN_PITCH 70
+%assign Panel_BUTTON_ROW_PITCH 18
+%assign Panel_BUTTON_X 6
+%assign Panel_BUTTON_Y 64
 %assign Panel_REOPEN_X 4
 %assign Panel_REOPEN_Y 4
-%assign Panel_REOPEN_WIDTH 80
-%assign Panel_REOPEN_HEIGHT 14
+%assign Panel_REOPEN_WIDTH 88
+%assign Panel_REOPEN_HEIGHT 16
 
 ; Resident27:06F4 fills a bounded near Viewport. Unlike169:0006 it does not
 ; borrow FS/GS as pixel counts, and it enters the native Voodoo access owner
@@ -72,9 +96,26 @@ tactical_panel_init:
     cmp byte [dseg_panel_magic], 0xD8
     je .ready
     mov byte [dseg_panel_magic], 0xD8
-    mov word [dseg_panel_x], 4
-    mov word [dseg_panel_y], 106
+    mov word [dseg_panel_x], Panel_INITIAL_X
+    mov word [dseg_panel_y], Panel_INITIAL_Y
 .ready:
+    ; Keep a remembered position valid for the complete current-size window.
+    cmp word [dseg_panel_x], 0
+    jge .x_nonnegative
+    mov word [dseg_panel_x], 0
+.x_nonnegative:
+    cmp word [dseg_panel_x], 320-Panel_WIDTH
+    jle .x_clamped
+    mov word [dseg_panel_x], 320-Panel_WIDTH
+.x_clamped:
+    cmp word [dseg_panel_y], 0
+    jge .y_nonnegative
+    mov word [dseg_panel_y], 0
+.y_nonnegative:
+    cmp word [dseg_panel_y], 200-Panel_HEIGHT
+    jle .y_clamped
+    mov word [dseg_panel_y], 200-Panel_HEIGHT
+.y_clamped:
     mov byte [dseg_panel_dragging], 0
     mov word [dseg_panel_pending], 0
     retn
@@ -229,26 +270,37 @@ tactical_panel_hit:
     jae .miss
     cmp dx, Panel_HEIGHT
     jae .miss
-    cmp dx, 14
+    cmp dx, Panel_TITLE_Y
+    jb .miss
+    cmp dx, Panel_TITLE_Y+Panel_TITLE_HEIGHT
     jae .party
-    cmp ax, 120
-    jae .hide
+    cmp ax, Panel_TITLE_X
+    jb .miss
+    cmp ax, Panel_WIDTH-Panel_TITLE_X
+    jae .miss
+    cmp ax, Panel_HIDE_X
+    jb .drag_title
+    cmp ax, Panel_HIDE_X+Panel_HIDE_WIDTH
+    jb .hide
+.drag_title:
     mov ax, 0xFFFE
     jmp .return
 .hide:
     mov ax, 9
     jmp .return
 .party:
-    cmp dx, 42
+    cmp dx, Panel_PARTY_Y
     jb .miss
-    cmp dx, 52
+    cmp dx, Panel_PARTY_Y+Panel_PARTY_HEIGHT
     jae .commands
-    sub ax, 6
-    cmp ax, 162
+    sub ax, Panel_PARTY_X
+    cmp ax, Panel_PARTY_COUNT*Panel_PARTY_PITCH
     jae .miss
     xor dx, dx
-    mov bx, 18
+    mov bx, Panel_PARTY_PITCH
     div bx
+    cmp dx, Panel_PARTY_WIDTH
+    jae .miss
     movzx bx, byte [dseg_partySize]
     cmp ax, bx
     jae .miss
@@ -435,7 +487,8 @@ panel_draw_button:
     sub di, 2
     mov ax, 134
     call panel_fill_relative
-    add bx, 2
+    add bx, Panel_BUTTON_TEXT_X-1
+    add dx, Panel_BUTTON_TEXT_Y-1
     pop ax
     call panel_text
     retn
@@ -466,34 +519,34 @@ tactical_panel_draw:
     mov di, Panel_HEIGHT-4
     mov ax, 135
     call panel_fill_relative
-    mov bx, 3
-    mov dx, 3
-    mov si, Panel_WIDTH-6
-    mov di, 11
+    mov bx, Panel_TITLE_X
+    mov dx, Panel_TITLE_Y
+    mov si, Panel_WIDTH-2*Panel_TITLE_X
+    mov di, Panel_TITLE_HEIGHT
     mov ax, 137
     call panel_fill_relative
     mov ax, offsetInCodeSegment(panel_title)
     mov bx, 7
-    mov dx, 4
+    mov dx, Panel_TITLE_Y+Panel_BUTTON_TEXT_Y
     call panel_text
     mov ax, offsetInCodeSegment(panel_hide)
-    mov bx, 120
-    mov dx, 3
-    mov si, 55
-    mov di, 11
+    mov bx, Panel_HIDE_X
+    mov dx, Panel_TITLE_Y
+    mov si, Panel_HIDE_WIDTH
+    mov di, Panel_TITLE_HEIGHT
     call panel_draw_button
     call panel_draw_actor
     xor di, di
 .party:
     mov ax, di
-    mov bx, 18
+    mov bx, Panel_PARTY_PITCH
     mul bx
     mov bx, ax
-    add bx, 6
-    mov dx, 42
-    mov si, 17
+    add bx, Panel_PARTY_X
+    mov dx, Panel_PARTY_Y
+    mov si, Panel_PARTY_WIDTH
     push di
-    mov di, 10
+    mov di, Panel_PARTY_HEIGHT
     mov ax, 137
     call panel_fill_relative
     pop di
@@ -501,7 +554,7 @@ tactical_panel_draw:
     cmp ax, di
     jne .slot_text
     push di
-    mov di, 10
+    mov di, Panel_PARTY_HEIGHT
     mov ax, 3
     call panel_fill_relative
     pop di
@@ -514,12 +567,12 @@ tactical_panel_draw:
     mov [bp-2], al
     mov byte [bp-1], 0
     lea ax, [bp-2]
-    add bx, 6
-    mov dx, 43
+    add bx, 7
+    mov dx, Panel_PARTY_Y+1
     call panel_text_near
 .blank_slot:
     inc di
-    cmp di, 9
+    cmp di, Panel_PARTY_COUNT
     jb .party
     mov si, offsetInCodeSegment(panel_buttons)
     mov di, panel_button_count
@@ -563,7 +616,7 @@ tactical_panel_draw:
     rep movsb
     pop ds
     lea ax, [bp-80]
-    mov bx, Panel_REOPEN_X+4
+    mov bx, Panel_REOPEN_X+5
     mov dx, Panel_REOPEN_Y+3
     call panel_print_small
 .return:
@@ -612,7 +665,7 @@ panel_draw_actor:
 .named:
     lea ax, [bp-94]
     mov bx, 7
-    mov dx, 15
+    mov dx, 19
     call panel_text_near
     mov ax, offsetInCodeSegment(panel_auto)
     cmp byte [di+TacticalRecord_mode], TacticalMode_HOLD
@@ -678,14 +731,14 @@ panel_draw_actor:
 .print_target:
     lea ax, [bp-94]
     mov bx, 7
-    mov dx, 24
+    mov dx, 28
     call panel_text_near
     jmp .weapon
 .generic_attack:
     mov ax, offsetInCodeSegment(panel_attack)
 .print_order:
     mov bx, 7
-    mov dx, 24
+    mov dx, 28
     call panel_text
 .weapon:
     ; Target-name drawing reusesBP-2, so resolve the selected companion again.
@@ -716,7 +769,7 @@ panel_draw_actor:
 .weapon_text:
     mov ax, si
     mov bx, 7
-    mov dx, 33
+    mov dx, 37
     call panel_text
 .return:
     pop es
@@ -750,13 +803,15 @@ panel_resume_button: db 'Resume', 0
 panel_cast_button: db 'C Cast', 0
 align 2
 panel_buttons:
-    dw 6, 54, 54, 10, 't', offsetInCodeSegment(panel_target_button)
-    dw 63, 54, 54, 10, 'm', offsetInCodeSegment(panel_melee_button)
-    dw 120, 54, 54, 10, 'r', offsetInCodeSegment(panel_ranged_button)
-    dw 6, 66, 54, 10, 'g', offsetInCodeSegment(panel_move_button)
-    dw 63, 66, 54, 10, 'h', offsetInCodeSegment(panel_hold_button)
-    dw 120, 66, 54, 10, 'a', offsetInCodeSegment(panel_auto_button)
-    dw 6, 78, 54, 10, 'i', offsetInCodeSegment(panel_inventory_button)
-    dw 63, 78, 54, 10, 'c', offsetInCodeSegment(panel_cast_button)
-    dw 120, 78, 54, 10, ' ', offsetInCodeSegment(panel_resume_button)
+    ; Rendering and hit testing consume these same rectangles. 6 px column
+    ; gaps, 4 px row gaps, and 6 px outer insets remain inert between controls.
+    dw Panel_BUTTON_X, Panel_BUTTON_Y, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 't', offsetInCodeSegment(panel_target_button)
+    dw Panel_BUTTON_X+Panel_BUTTON_COLUMN_PITCH, Panel_BUTTON_Y, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'm', offsetInCodeSegment(panel_melee_button)
+    dw Panel_BUTTON_X+2*Panel_BUTTON_COLUMN_PITCH, Panel_BUTTON_Y, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'r', offsetInCodeSegment(panel_ranged_button)
+    dw Panel_BUTTON_X, Panel_BUTTON_Y+Panel_BUTTON_ROW_PITCH, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'g', offsetInCodeSegment(panel_move_button)
+    dw Panel_BUTTON_X+Panel_BUTTON_COLUMN_PITCH, Panel_BUTTON_Y+Panel_BUTTON_ROW_PITCH, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'h', offsetInCodeSegment(panel_hold_button)
+    dw Panel_BUTTON_X+2*Panel_BUTTON_COLUMN_PITCH, Panel_BUTTON_Y+Panel_BUTTON_ROW_PITCH, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'a', offsetInCodeSegment(panel_auto_button)
+    dw Panel_BUTTON_X, Panel_BUTTON_Y+2*Panel_BUTTON_ROW_PITCH, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'i', offsetInCodeSegment(panel_inventory_button)
+    dw Panel_BUTTON_X+Panel_BUTTON_COLUMN_PITCH, Panel_BUTTON_Y+2*Panel_BUTTON_ROW_PITCH, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, 'c', offsetInCodeSegment(panel_cast_button)
+    dw Panel_BUTTON_X+2*Panel_BUTTON_COLUMN_PITCH, Panel_BUTTON_Y+2*Panel_BUTTON_ROW_PITCH, Panel_BUTTON_WIDTH, Panel_BUTTON_HEIGHT, ' ', offsetInCodeSegment(panel_resume_button)
 panel_button_count equ (($-panel_buttons)/12)

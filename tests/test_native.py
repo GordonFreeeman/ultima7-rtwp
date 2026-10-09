@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Execute the delivered 16-bit machine code, with narrow native-service stubs."""
-import json,struct,sys
+import argparse,json,struct,sys
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/'tools/python'),str(ROOT/'source')]
 from unicorn import Uc,UC_ARCH_X86,UC_MODE_16,UC_HOOK_CODE
 from unicorn.x86_const import *
 from native_patcher import Executable
-exe=Executable((ROOT/'build/U7-V12.EXE').read_bytes());s=exe.segments[336]
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--executable',type=Path,default=ROOT/'build/U7-V12.EXE',help='Rebuilt native U7.EXE')
+args=parser.parse_args()
+exe=Executable(args.executable.read_bytes());s=exe.segments[336]
 code=bytes(exe.data[s.start:s.start+s.size]);at=code.index(b'U7T12SYM')+8
 names=['init','damage','rng','magic_restored','mana_read','mana_write','eligible','tick','mana_init','open_book','new_book']
 syms=dict(zip(names,struct.unpack_from('<11H',code,at)))

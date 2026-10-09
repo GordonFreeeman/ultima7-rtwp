@@ -1,66 +1,89 @@
-ULTIMA VII TACTICAL PATCH v1.2: INDEPENDENT VALIDATION
-2026-10-08
+ULTIMA VII TACTICAL PATCH v1.2.2
+DIFFICULTY MOUSE INPUT AND SELECTION HIGHLIGHT
+2026-10-09
 
-BASELINE AND SCOPE
-Frozen v1.1 sources reproduce its 713,824-byte U7.EXE byte for byte:
-0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786
-The interrupted v1.2 source changes were absent. All observations below were
-made against this independent implementation, not inherited test claims.
-Only the isolated disposable game copy was mutated during runtime tests.
+BASELINE AND REPRODUCED DEFECT
+The accepted v1.2.1 full-game ZIP is the immutable baseline, SHA-256:
+0efde8d69bb820bfba27a7faa224308f91916c03c7f22a6708379a9bd0a6ec65
+Its MAINMENU.EXE is 130332 bytes, SHA-256:
+da649290c78abde1eadc3627a9f3999c3eb32f46f7516d4040c7fa571e559763
 
-ASSEMBLED 16-BIT CODE: PASS
-Python Unicorn executes the actual overlay 336 bytes from the rebuilt U7.EXE.
-Narrow native-service stubs supply allocation, NPC IDs and RNG. Tests cover:
-- Five outgoing/incoming damage factors, native signed 127 cap, zero/negative
-  damage, party/party, nonparty/nonparty and absent-attacker exclusions.
-- Twenty one-point party hits produce 16 actual damage on Hard and 10 on Avatar.
-  Unknown NPC IDs still take minimum one-point damage.
-- All six original RNG bounds, all five settings, before/after original flag 3.
-  Normal passes the unchanged bound; Game Journalist consumes no RNG.
-- Native flag object layout, eligible roster, initialized saved mana, no refill
-  of already initialized mana, separate Avatar/companion mana reads/writes.
-- Correct far-return stack consumption, BP and FS/GS preservation.
-- Fresh book initialization, linked pointers and quality preserved; another
-  item shape left unchanged.
+The user's reported mouse defect was reproduced in the actual native menu.
+Clicks at native (111,190) and (138,190) fell on visible Difficulty letters
+but did not change the setting. The narrow center point (159,190) did cycle
+Normal to Hard; clicking within the resulting Hard label at (190,190) failed.
+The row did not show the original entries' brighter selected appearance.
+The preceding release's single center-point checks had missed this coverage
+gap. The original font and saved difficulty format were not the cause.
 
-NATIVE DOSBOX: OBSERVED
-- Five-choice DOS boot selector persists choice and resumes original menu.
-- Original Avatar spellbook opens from tactical Cast.
-- Jaana requires her own book and reagents. With a learned book and reagents,
-  native Light reduces her mana 18 to 17 and leaves +0F/+10 at 0C/0C.
-- The actual Avatar is restored to IBO 0038; active caster is cleared. Casting
-  returns to tactical pause with game clock 10971 unchanged.
-- Clearing original generator flag 3 blocks casting with the story-lock text.
-- Native SaveUI serializes the initialized mana bytes. Native reload restores
-  saved mana 18 after live RAM was set to 3, and Avatar IBO remains 0038.
-- Nystul's new topic and native Yes/No confirmation work. Purchase adds one
-  book and removes exactly 500 gold: party 10192 to 9692.
-- Purchased book data has linear spells FF, no advanced-circle bits, and zero
-  bookmark. Initialization was checked in the native item buffer.
-- Insufficient gold refuses purchase and creates no book. Declining returns to
-  the original conversation and creates no book.
+CORRECTION
+Only MAINMENU.EXE changes from v1.2.1. Its native text widget now uses a private
+copy of the original virtual-method table. The hit predicate follows the
+current centered text width, height and baseline. The renderer honors the
+native selected state and brightens the text using the original menu palette.
+The original menu list continues to own mouse/keyboard input and action 14.
+Difficulty cycling, persistence and child-screen return stay on that path.
+The existing Return to Menu draw call now restores the row before composing
+and fading in the screen, so it is visible without extra pointer/key input.
 
-RESOURCES AND INSTALLER: PASS
-All 1012 original Usecode records are retained. Only six merchants change;
-all original operands and branch destinations are preserved. The added shop
-function uses original helpers 90A and 8F8. Rebuilding the two pristine LINKDEP
-files reproduces both byte for byte. Patched transitive closures, sizes and
-file offsets validate against every output record.
+FINAL MAINMENU.EXE
+130749 bytes
+d6ea3f7b4e2fea5d678a0113286ecaba9cf6bdd20b3446365bf9c29c6e40512e
 
-The integration suite verifies all five output hashes on clean installation,
-read-only check, idempotent installation, v1.1 upgrade, verified explicit
-original backup, exact five-file uninstall, save/config/preference retention,
-unknown executables and independently modified resources, backup conflicts,
-installation lock, FAT-style backup fallback, replacement failure, and
-rollback after three of five replacements were committed.
+NATIVE DOSBOX CHECKS
+The final executable was run through ULTIMA7.COM in native DOSBox 0.74-3.
+Representative left, center and right label clicks cycle the setting, and
+hover brightens the existing blue glyphs. Keyboard focus was visibly observed
+on the original Quotes row, then moved Down to Difficulty with the mouse
+parked off the row; Enter cycles Normal to Hard. A fresh selected-Normal PNG
+was captured from this exact final executable and visually reviewed.
 
-LIMITS
-This is focused native and machine-code verification, not a complete campaign
-playthrough. Nystul was the end-to-end native purchase case; the other merchants
-received structural checks. SaveUI was invoked through a disposable fixture
-for serialization testing; every nested save/load/cancel flow was not replayed.
-All five combat settings were tested in assembled-code emulation; full native
-encounters on all five settings were not replayed. Old v1.1 runtime scenarios
-were not all repeated. Current identities and full machine-code/installer
-results are in BUILD.json and VALIDATION.json. No game data or screenshots
-are distributed with the patch.
+The completed New Game screen returns through the original Return to Menu
+control. Difficulty appears on the first restored canvas before any further
+input, remains visible after the fade, and still responds to hover and click.
+The original Journey Onward action at Normal reaches the supplied game world.
+
+A prior candidate with the identical hit-test and palette code additionally
+passed 15 actual left/center/right clicks across all five displayed choices,
+including the long Game Journalist label. Those measurements are retained
+with their exact candidate hash in VALIDATION.json. The final change only
+restores the widget before the native return-screen composition. Final-binary
+representative input, keyboard, return and Journey observations are recorded
+separately; no earlier candidate is included as a deliverable.
+
+ASSEMBLED NATIVE HOOKS
+26 compiled-hook cases pass. The retained lifecycle/persistence cases
+cover original action passthrough, all five settings, read/create/write/close
+failure handling, child return, native stack use and destructor ownership.
+Per-label virtual-method checks cover the private table, interior/exterior
+mouse coordinates and selected/unselected rendering. These use actual
+assembled code with narrow native-service stubs; full native observations
+are listed separately above and in VALIDATION.json.
+
+UPGRADE AND PRESERVATION
+The guarded installer accepts the exact v1.2.1 menu and its verified original
+backup. Its integration suite passes, including an upgrade that changes
+exactly MAINMENU.EXE, idempotence, read-only check, missing-backup rejection,
+unknown/modified inputs, backup conflicts, replacement failure and rollback.
+The manual update ZIP contains only this replacement executable under
+Update-files, together with instructions and the complete source package.
+
+The final U7.EXE remains byte-identical to v1.2.1, SHA-256:
+293eca6b8d35840d7f6142daa8e5ecda51083befdd349786d29337b9667180e5
+Its compiled engine patch objects are identical. USECODE and both LINKDEP
+tables also remain byte-identical. The previous RTwP panel, gameplay features,
+launcher, saves, configuration, preference and original backups are retained.
+
+REPRODUCTION AND PACKAGING
+The current packaged source is rebuilt from the full archive's included
+verified .ORI backups. The complete patch manifest, compiled objects, final
+executables and resource output identities match exactly. The archive audit
+retains every v1.2.1 file and permits only MAINMENU.EXE plus the root README
+and validation manifest to change. Current source and a native screenshot
+are explicit additions. ZIP paths, CRCs, nested archives and final executable
+hashes are verified before publication.
+
+SCOPE
+These are focused native menu and assembled-code checks. No complete campaign,
+combat, casting, merchant or broad tactical-panel test pass is claimed for
+this menu-only correction. The accepted engine and resources remain identical.

@@ -29,11 +29,17 @@ def main():
     parser.add_argument("--previous", required=True)
     parser.add_argument("--report", required=True)
     parser.add_argument("--assets", required=True, help="Pristine game folder")
+    parser.add_argument("--previous-game", help="Previous full game with its existing menu, resources and pristine backups")
+    parser.add_argument("--expected-game-changes", default="U7.EXE,MAINMENU.EXE",
+                        help="Comma-separated exact game-file changes expected for --previous-game")
     args = parser.parse_args()
     distribution = Path(args.distribution).resolve()
     original = Path(args.original).read_bytes()
     previous = Path(args.previous).read_bytes()
     info = json.loads((distribution / "patch.json").read_text())
+    prior = next(x for x in info['accepted_previous']
+                 if x['size'] == len(previous) and x['sha256'] == hashlib.sha256(previous).hexdigest())
+    prior_version = prior['version']
     results = []
     asset_root = Path(args.assets)
     asset_data = {r["path"]:(asset_root/r["path"]).read_bytes() for r in info["assets"]}
@@ -99,19 +105,19 @@ def main():
         invoke(clean, "--uninstall")
         results.append("uninstall: exact original restored; backup/save/config retained; repeat safe")
 
-        upgrade = game("upgrade-v1.1", previous)
+        upgrade = game("upgrade-previous", previous)
         (upgrade / "TACTICAL").mkdir()
         (upgrade / "TACTICAL" / "U7.ORI").write_bytes(original)
         (upgrade / "TACTICAL" / "player-note.txt").write_text("retain old user note")
         invoke(upgrade, "--check")
         invoke(upgrade)
-        check(output_matches(upgrade / "U7.EXE"), "v1.1 upgrade output mismatch")
+        check(output_matches(upgrade / "U7.EXE"), "Previous-version upgrade output mismatch")
         check((upgrade / "TACTICAL" / "U7.ORI").read_bytes() == original, "Old original backup changed")
         check((upgrade / "TACTICAL" / "player-note.txt").read_text() == "retain old user note", "User note changed")
         preserve(upgrade)
-        results.append("v1.1 upgrade: existing local original recognized; old files and new progress retained")
+        results.append(f"{prior_version} executable upgrade: existing local original recognized; old files and new progress retained")
 
-        missing = game("v1.1-missing-original", previous)
+        missing = game("previous-missing-original", previous)
         invoke(missing, success=False)
         check((missing / "U7.EXE").read_bytes() == previous, "Missing-original failure changed executable")
         check(not (missing / "TACTICAL-PATCH").exists(), "Missing-original failure wrote backup folder")
@@ -119,7 +125,42 @@ def main():
         original_path.write_bytes(original)
         invoke(missing, "--original", str(original_path))
         check(output_matches(missing / "U7.EXE"), "Explicit original upgrade failed")
-        results.append("v1.1 missing backup: refused without writes; explicit verified original succeeds")
+        results.append(f"{prior_version} missing backup: refused without writes; explicit verified original succeeds")
+
+        if args.previous_game:
+            prior_root = Path(args.previous_game)
+            current = game('complete-previous-upgrade', (prior_root/'U7.EXE').read_bytes())
+            for name in asset_data:
+                (current/name).write_bytes((prior_root/name).read_bytes())
+            shutil.copytree(prior_root/'TACTICAL-PATCH', current/'TACTICAL-PATCH')
+            before = {p.relative_to(current):p.read_bytes() for p in current.rglob('*') if p.is_file()}
+            invoke(current, '--check')
+            check(before == {p.relative_to(current):p.read_bytes() for p in current.rglob('*') if p.is_file()},
+                  'Previous full-game check changed files')
+            invoke(current)
+            check(output_matches(current/'U7.EXE'), 'Previous full-game upgrade mismatch')
+            preserve(current)
+            changed = {p.relative_to(current).as_posix() for p in current.rglob('*')
+                       if p.is_file() and before[p.relative_to(current)] != p.read_bytes()}
+            expected_changes = set(args.expected_game_changes.split(','))
+            check(changed == expected_changes,
+                  f'UI upgrade modified unexpected game files: {changed}')
+            stamp = (current/'MAINMENU.EXE').stat().st_mtime_ns
+            invoke(current)
+            check((current/'MAINMENU.EXE').stat().st_mtime_ns == stamp,
+                  'Repeat upgrade rewrote the menu')
+            results.append('complete previous game upgrade: exact changes '+', '.join(sorted(changed))+'; resources, originals, difficulty, saves and config retained; repeat is idempotent')
+
+            broken = game('previous-menu-missing-original', (prior_root/'U7.EXE').read_bytes())
+            for name in asset_data:
+                (broken/name).write_bytes((prior_root/name).read_bytes())
+            shutil.copytree(prior_root/'TACTICAL-PATCH', broken/'TACTICAL-PATCH')
+            (broken/'TACTICAL-PATCH/MAINMENU.ORI').unlink()
+            before = {p.relative_to(broken):p.read_bytes() for p in broken.rglob('*') if p.is_file()}
+            invoke(broken, success=False)
+            check(before == {p.relative_to(broken):p.read_bytes() for p in broken.rglob('*') if p.is_file()},
+                  'Missing previous menu backup rejection changed files')
+            results.append('previous native menu without its verified original: refused before any write')
 
         bad = game("unknown", original[:-1] + bytes([original[-1] ^ 1]))
         before = (bad / "U7.EXE").read_bytes()

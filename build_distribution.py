@@ -21,6 +21,12 @@ V7 = {"version": "v7", "size": 713824,
       "sha256": "7e7d908a0885627f545fd6a6ef299d34e170bdb19bfc85e8db6d2d05b5f01349"}
 V11 = {"version": "1.1", "size": 713824,
        "sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786"}
+V12 = {"version": "1.2-independent", "size": 716148,
+       "sha256": "53bb9c174ec04959777a494cfb788365df5e2d35d0e38cbcb24cadae60173d51"}
+V12_MENU = {"version": "1.2-independent", "size": 131224,
+            "sha256": "6cccc4599160adb25ae8d0c80e1bbd96483b05fbab993171bcd1358d0de1b960"}
+V121_MENU = {"version": "1.2.1", "size": 130332,
+             "sha256": "da649290c78abde1eadc3627a9f3999c3eb32f46f7516d4040c7fa571e559763"}
 MARKER = {"kind": "u7-tactical-patch-distribution", "format": 1}
 
 
@@ -43,9 +49,14 @@ def build(args):
     native = load_native(source)
     native.require(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,39}", args.version) is not None,
                    "Version must be a short filename-safe label")
+    usecode_path = Path(args.usecode).resolve()
+    # The full game includes verified *.ORI backups. Accept that existing
+    # layout directly so its packaged source can be rebuilt without moving
+    # or renaming any pristine game files.
+    link_paths = [usecode_path.parent / (name + ('.ORI' if usecode_path.name.upper() == 'USECODE.ORI' else ''))
+                  for name in ('LINKDEP1', 'LINKDEP2')]
     protected = [source, HERE, Path(args.original).resolve(), Path(args.mainmenu).resolve(),
-                 Path(args.usecode).resolve(), Path(args.usecode).resolve().parent/'LINKDEP1',
-                 Path(args.usecode).resolve().parent/'LINKDEP2']
+                 usecode_path, *link_paths]
     protected.extend(Path(value).resolve() for value in (args.expected, args.previous) if value)
     native.require(not Path(args.output).is_symlink(), "Output must not be a symbolic link")
     native.require(all(p != destination and not p.is_relative_to(destination) for p in protected),
@@ -66,7 +77,7 @@ def build(args):
                    "Unsupported original executable")
     if args.previous:
         previous = Path(args.previous).read_bytes()
-        native.require(any(len(previous)==x['size'] and digest(previous)==x['sha256'] for x in [V7,V11]),
+        native.require(any(len(previous)==x['size'] and digest(previous)==x['sha256'] for x in [V7,V11,V12]),
                        "Previous-version verification failed")
     with tempfile.TemporaryDirectory(prefix="u7-share-build-") as temporary:
         temporary = Path(temporary)
@@ -113,7 +124,7 @@ def build(args):
                 "original": {"size": len(original), "sha256": digest(original),
                              "description": "English Ultima VII: The Black Gate 3.4 / Forge of Virtue"},
                 "output": {"size": len(output), "sha256": digest(output)},
-                "accepted_previous": [V7,V11], "source_sha256": source_hashes,
+                "accepted_previous": [V7,V11,V12], "source_sha256": source_hashes,
                 "objects": object_records}
         asset_spec = importlib.util.spec_from_file_location('distribution_assets',frozen_source/'asset_patcher.py')
         assets = importlib.util.module_from_spec(asset_spec)
@@ -123,7 +134,7 @@ def build(args):
                         str(frozen_source/'menu/menu.asm'),'-o',str(menu_object)],check=True)
         menu_input = Path(args.mainmenu).read_bytes()
         usecode_input = Path(args.usecode).read_bytes()
-        link_inputs = [(Path(args.usecode).parent/name).read_bytes() for name in ('LINKDEP1','LINKDEP2')]
+        link_inputs = [path.read_bytes() for path in link_paths]
         native.require(tuple(link_inputs)==assets.link_dependencies(usecode_input), 'Unsupported native dependency tables')
         usecode_output = assets.patch_usecode(usecode_input)
         link_outputs = assets.link_dependencies(usecode_output)
@@ -136,9 +147,12 @@ def build(args):
             ('STATIC/USECODE','USECODE.ORI',usecode_input,usecode_output),
             ('STATIC/LINKDEP1','LINKDEP1.ORI',link_inputs[0],link_outputs[0]),
             ('STATIC/LINKDEP2','LINKDEP2.ORI',link_inputs[1],link_outputs[1])]:
-            info['assets'].append({'path':name,'backup':backup,
+            record = {'path':name,'backup':backup,
                 'original':{'size':len(before),'sha256':digest(before)},
-                'output':{'size':len(after),'sha256':digest(after)}})
+                'output':{'size':len(after),'sha256':digest(after)}}
+            if name == 'MAINMENU.EXE':
+                record['accepted_previous'] = [V12_MENU, V121_MENU]
+            info['assets'].append(record)
         (staged / "patch.json").write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
         (staged / "distribution-marker.json").write_text(json.dumps(MARKER, indent=2) + "\n", encoding="utf-8")
         for name in ("install.py", "build_distribution.py", "README.md", "HANDOVER.md", "LICENSE-UPSTREAM.txt", "ATTRIBUTION.md"):
@@ -190,10 +204,10 @@ if __name__ == "__main__":
     parser.add_argument("--expected", help="Locally built final U7.EXE to reproduce exactly")
     parser.add_argument("--mainmenu", required=True, help="Locally owned pristine MAINMENU.EXE")
     parser.add_argument("--usecode", required=True, help="Locally owned pristine STATIC/USECODE")
-    parser.add_argument("--previous", help="Local v7 U7.EXE to verify the upgrade identity")
+    parser.add_argument("--previous", help="Local v7, v1.1 or independent v1.2 U7.EXE to verify the upgrade identity")
     parser.add_argument("--source", default=str(HERE / "source" if (HERE / "source").is_dir() else HERE.parent / "native-mod"))
     parser.add_argument("--nasm", default=shutil.which("nasm") or "nasm")
-    parser.add_argument("--version", default="1.2")
+    parser.add_argument("--version", default="1.2.2")
     parser.add_argument("--output", default=str(HERE / "release"))
     parser.add_argument("--archive", help="Optional ZIP path outside the release directory")
     build(parser.parse_args())

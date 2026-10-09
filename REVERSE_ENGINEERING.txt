@@ -1,4 +1,21 @@
-V1.2 ADDENDUM
+V1.2.2 ADDENDUM
+
+Difficulty now uses corrected text-based mouse bounds and selected rendering
+inside the original native menu list. See the current HANDOVER.md and source
+for the widget-local changes. Only MAINMENU.EXE changes from v1.2.1; the
+following v1.2.1 and earlier sections are retained as implementation history.
+
+V1.2.1 ADDENDUM
+
+This release moves Difficulty into the original graphical MAINMENU widget
+list and enlarges the native tactical panel. HANDOVER.md contains the current
+menu frame, CRT/BSS reservation, guarded hooks, relocation table, preference
+I/O, child-screen repaint and panel geometry notes. VALIDATION.txt and
+VALIDATION.json contain the current release's checks and limitations.
+The earlier research below is retained for source history. It does not
+describe the current graphical difficulty control or current panel geometry.
+
+V1.2 ADDENDUM (HISTORICAL)
 
 See HANDOVER.md for the five-file build, damage/RNG hooks, original flag 3,
 companion mana offsets, caster context, menu entry and Usecode dependency

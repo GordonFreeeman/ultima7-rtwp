@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
+  "version": "1.2.2",
   "original": {
     "size": 689248,
     "sha256": "4d588b12c775927c77c221531be4910eaf413864a8e2ec3f6f0d7a9c302b6e54",
@@ -7,7 +7,7 @@
   },
   "output": {
     "size": 716148,
-    "sha256": "53bb9c174ec04959777a494cfb788365df5e2d35d0e38cbcb24cadae60173d51"
+    "sha256": "293eca6b8d35840d7f6142daa8e5ecda51083befdd349786d29337b9667180e5"
   },
   "assets": [
     {
@@ -18,9 +18,21 @@
         "sha256": "73d88ccdb103ee3c6ead70e64ed41eefa9312875ded98d93829979e2a511f43c"
       },
       "output": {
-        "size": 131224,
-        "sha256": "6cccc4599160adb25ae8d0c80e1bbd96483b05fbab993171bcd1358d0de1b960"
-      }
+        "size": 130749,
+        "sha256": "d6ea3f7b4e2fea5d678a0113286ecaba9cf6bdd20b3446365bf9c29c6e40512e"
+      },
+      "accepted_previous": [
+        {
+          "version": "1.2-independent",
+          "size": 131224,
+          "sha256": "6cccc4599160adb25ae8d0c80e1bbd96483b05fbab993171bcd1358d0de1b960"
+        },
+        {
+          "version": "1.2.1",
+          "size": 130332,
+          "sha256": "da649290c78abde1eadc3627a9f3999c3eb32f46f7516d4040c7fa571e559763"
+        }
+      ]
     },
     {
       "path": "STATIC/USECODE",
@@ -316,7 +328,7 @@
       "segment": 336,
       "offset": 3456,
       "file_offset": 692704,
-      "length": 7677,
+      "length": 7763,
       "relocations": [
         84,
         121,
@@ -388,38 +400,40 @@
         3591,
         4492,
         4503,
-        4593,
-        4641,
-        5084,
-        5200,
-        5304,
-        5316,
-        5705,
-        5804,
-        5822,
-        5892,
-        6555,
-        6833,
-        6863,
-        7020,
-        7195,
-        7212,
-        7321,
-        7340,
-        7356,
-        7388,
-        7430,
+        4645,
+        4693,
+        5168,
+        5284,
+        5388,
+        5400,
+        5792,
+        5891,
+        5909,
+        5979,
+        6641,
+        6919,
+        6949,
+        7106,
+        7281,
+        7298,
+        7407,
+        7426,
         7442,
-        7450,
-        7455,
-        7460,
-        7531,
-        7538
+        7474,
+        7516,
+        7528,
+        7536,
+        7541,
+        7546,
+        7617,
+        7624
       ]
     }
   ],
   "source_sha256": {
-    "asset_patcher.py": "04f6392e30d0e7378d558a029574ada892d937a14c4b52f6738b5ba58d64a744",
+    "asset_patcher.py": "83953bac9db1454193636099b55ce583fb8fa79a320b19c09b630befcf53629d",
+    "check_menu.py": "3bfb7aa0b4a5c67f137ed5a9a935a1cd8f5d95256217e3f7d682bdfeb73c2299",
+    "check_panel_geometry.py": "b198848e27d270fc93cc72d9511b4e1e28098ae895413c4cd98e891ce5da5899",
     "commands.inc": "bd0e2a4437edf10db95badeaa7351920c762ff4edae54db30e19d7d0849be003",
     "include/common.asm": "8b76f52fe8b0476d40587020c1afe1c922f37c66cddd6240abe8f723f8c5f72a",
     "include/constants.asm": "ef2264da24e67f2cbb572212effb0c88371726f8dfa5b95a365710d50c500fe2",
@@ -427,9 +441,9 @@
     "include/segments.asm": "da89b91043a67e5d9a94769368d01fb9bfd9843f7e290e7998fc5c34284611a7",
     "include/u7bg.asm": "085b9d72d113e25d585586466b4b63966b0ed3830b0d8051df7f1e3c627211f0",
     "include/weapon_types.inc": "afba16acd36c9e7ae610946a05258bedb82f6352d191dda760782c8716a9cdaa",
-    "menu/menu.asm": "a3d1725a9a42912c6d32aad8d2dfa18a866bd36f8a56a82f8cbefd40f8d6d8ef",
+    "menu/menu.asm": "9cf21555dfde754acf69940e2344d48862c3d4dcd1190b0aa55fed9696fad19b",
     "native_patcher.py": "a6b5054223a19bd08633b81c8200aed7d8d2a5fa140e05148fff7e862a7f5b90",
-    "panel.inc": "87926624b6d91c5b99ee3b640c7d3eb40824fdffdff7549f8c751e7044942cdc",
+    "panel.inc": "94f81f191ceb01bab61699669c79536d90861ea3bf0b693d766f82a8a52ac391",
     "pause.asm": "4c29f7f0484bda6cb86db5d585183f7545eff29093bffc7d9ba1e44d1d16b947",
     "v12-state.inc": "35f55f8c555cfcb882489ab113561f1e62e92ddb276b2768daae35a10eb90ae8",
     "v12.inc": "8f51692e07cc70a352b4499cb5933b301c28900c5be5e77e1ddb16d397acf635",

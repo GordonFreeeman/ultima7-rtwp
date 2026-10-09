@@ -1,116 +1,1524 @@
 {
-  "version": "1.2",
-  "build": "independent competition build",
-  "date": "2026-10-08",
-  "baseline_v11_reproduction": {
-    "size": 713824,
-    "sha256": "0f203c9b0e63b11c5d3319247640285548fca333596c259706eee07c74a62786",
-    "status": "byte-identical"
+  "version": "1.2.2",
+  "date": "2026-10-09",
+  "status": "passed",
+  "accepted_baseline": {
+    "version": "1.2.1",
+    "full_game_archive_sha256": "0efde8d69bb820bfba27a7faa224308f91916c03c7f22a6708379a9bd0a6ec65",
+    "MAINMENU.EXE": {
+      "size": 130332,
+      "sha256": "da649290c78abde1eadc3627a9f3999c3eb32f46f7516d4040c7fa571e559763"
+    },
+    "U7.EXE": {
+      "size": 716148,
+      "sha256": "293eca6b8d35840d7f6142daa8e5ecda51083befdd349786d29337b9667180e5"
+    },
+    "user_report": "Keyboard cycling works; Difficulty lacks normal selection highlight and visible-text mouse clicks fail.",
+    "native_reproduction": {
+      "menu_sha256": "da649290c78abde1eadc3627a9f3999c3eb32f46f7516d4040c7fa571e559763",
+      "probes": [
+        {
+          "surface_x": 222,
+          "surface_y": 380,
+          "native_x": 111,
+          "native_y": 190,
+          "before": "absent/default02",
+          "after": "absent/default02",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 276,
+          "surface_y": 380,
+          "native_x": 138,
+          "native_y": 190,
+          "before": "absent/default02",
+          "after": "absent/default02",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 318,
+          "surface_y": 380,
+          "native_x": 159,
+          "native_y": 190,
+          "before": "absent/default02",
+          "after": "03",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 380,
+          "surface_y": 380,
+          "native_x": 190,
+          "native_y": 190,
+          "before": "03",
+          "after": "03",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 420,
+          "surface_y": 380,
+          "native_x": 210,
+          "native_y": 190,
+          "before": "03",
+          "after": "03",
+          "menu_retained": true
+        }
+      ]
+    },
+    "root_cause": "Native text widget inherits image-frame hit bounds and does not render its selected state."
   },
-  "native_machine_code": {
-    "status": "PASS",
-    "machine_code_tests": [
+  "final_menu": {
+    "size": 130749,
+    "sha256": "d6ea3f7b4e2fea5d678a0113286ecaba9cf6bdd20b3446365bf9c29c6e40512e"
+  },
+  "unchanged_engine": {
+    "size": 716148,
+    "sha256": "293eca6b8d35840d7f6142daa8e5ecda51083befdd349786d29337b9667180e5"
+  },
+  "native_menu": {
+    "tested_menu_sha256": "d6ea3f7b4e2fea5d678a0113286ecaba9cf6bdd20b3446365bf9c29c6e40512e",
+    "tested_engine_sha256": "293eca6b8d35840d7f6142daa8e5ecda51083befdd349786d29337b9667180e5",
+    "launcher": "ULTIMA7.COM",
+    "runtime": "DOSBox0.74-3, SVGA S3, 16MiB, fixed12000 normal core, XMS on/EMS off, surface normal2x; actual host surface captures converted to native320x200 PNG",
+    "baseline_reproduction": {
+      "menu_sha256": "da649290c78abde1eadc3627a9f3999c3eb32f46f7516d4040c7fa571e559763",
+      "probes": [
+        {
+          "surface_x": 222,
+          "surface_y": 380,
+          "native_x": 111,
+          "native_y": 190,
+          "before": "absent/default02",
+          "after": "absent/default02",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 276,
+          "surface_y": 380,
+          "native_x": 138,
+          "native_y": 190,
+          "before": "absent/default02",
+          "after": "absent/default02",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 318,
+          "surface_y": 380,
+          "native_x": 159,
+          "native_y": 190,
+          "before": "absent/default02",
+          "after": "03",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 380,
+          "surface_y": 380,
+          "native_x": 190,
+          "native_y": 190,
+          "before": "03",
+          "after": "03",
+          "menu_retained": true
+        },
+        {
+          "surface_x": 420,
+          "surface_y": 380,
+          "native_x": 210,
+          "native_y": 190,
+          "before": "03",
+          "after": "03",
+          "menu_retained": true
+        }
+      ]
+    },
+    "baseline_valid_interior_failures_native": [
+      [
+        111,
+        190
+      ],
+      [
+        138,
+        190
+      ],
+      [
+        190,
+        190
+      ]
+    ],
+    "baseline_center_success_native": [
+      159,
+      190
+    ],
+    "full_width_functional_reference": {
+      "exact_menu_hash": "a511f784e8f68917aa32cf3490a30d6b83bc20fce0c7a99c33f978d6090fbe4d",
+      "cases": [
+        {
+          "phase": "left",
+          "profile_before": 2,
+          "profile_after": 3,
+          "visible_glyph_bounds_native": [
+            107,
+            187,
+            210,
+            194
+          ],
+          "point_native": [
+            110,
+            190
+          ],
+          "hover_glyph_brightness_delta": 116.55512572533851,
+          "changed_glyph_pixels": 515,
+          "glyph_pixels": 517,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "left",
+          "profile_before": 3,
+          "profile_after": 4,
+          "visible_glyph_bounds_native": [
+            114,
+            187,
+            203,
+            194
+          ],
+          "point_native": [
+            117,
+            190
+          ],
+          "hover_glyph_brightness_delta": 114.20267260579067,
+          "changed_glyph_pixels": 447,
+          "glyph_pixels": 449,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "left",
+          "profile_before": 4,
+          "profile_after": 0,
+          "visible_glyph_bounds_native": [
+            108,
+            187,
+            209,
+            194
+          ],
+          "point_native": [
+            111,
+            190
+          ],
+          "hover_glyph_brightness_delta": 115.50695825049704,
+          "changed_glyph_pixels": 501,
+          "glyph_pixels": 503,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "left",
+          "profile_before": 0,
+          "profile_after": 1,
+          "visible_glyph_bounds_native": [
+            80,
+            187,
+            238,
+            194
+          ],
+          "point_native": [
+            83,
+            190
+          ],
+          "hover_glyph_brightness_delta": 119.11139896373055,
+          "changed_glyph_pixels": 770,
+          "glyph_pixels": 772,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "left",
+          "profile_before": 1,
+          "profile_after": 2,
+          "visible_glyph_bounds_native": [
+            114,
+            187,
+            203,
+            194
+          ],
+          "point_native": [
+            117,
+            190
+          ],
+          "hover_glyph_brightness_delta": 112.65217391304347,
+          "changed_glyph_pixels": 435,
+          "glyph_pixels": 437,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "middle",
+          "profile_before": 2,
+          "profile_after": 3,
+          "visible_glyph_bounds_native": [
+            107,
+            187,
+            210,
+            194
+          ],
+          "point_native": [
+            158,
+            190
+          ],
+          "hover_glyph_brightness_delta": 119.58413926499034,
+          "changed_glyph_pixels": 515,
+          "glyph_pixels": 517,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "middle",
+          "profile_before": 3,
+          "profile_after": 4,
+          "visible_glyph_bounds_native": [
+            114,
+            187,
+            203,
+            194
+          ],
+          "point_native": [
+            158,
+            190
+          ],
+          "hover_glyph_brightness_delta": 120.26280623608017,
+          "changed_glyph_pixels": 448,
+          "glyph_pixels": 449,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "middle",
+          "profile_before": 4,
+          "profile_after": 0,
+          "visible_glyph_bounds_native": [
+            108,
+            187,
+            209,
+            194
+          ],
+          "point_native": [
+            158,
+            190
+          ],
+          "hover_glyph_brightness_delta": 116.88866799204769,
+          "changed_glyph_pixels": 502,
+          "glyph_pixels": 503,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "middle",
+          "profile_before": 0,
+          "profile_after": 1,
+          "visible_glyph_bounds_native": [
+            80,
+            187,
+            238,
+            194
+          ],
+          "point_native": [
+            159,
+            190
+          ],
+          "hover_glyph_brightness_delta": 117.68393782383419,
+          "changed_glyph_pixels": 772,
+          "glyph_pixels": 772,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "middle",
+          "profile_before": 1,
+          "profile_after": 2,
+          "visible_glyph_bounds_native": [
+            114,
+            187,
+            203,
+            194
+          ],
+          "point_native": [
+            158,
+            190
+          ],
+          "hover_glyph_brightness_delta": 118.87871853546912,
+          "changed_glyph_pixels": 436,
+          "glyph_pixels": 437,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "right",
+          "profile_before": 2,
+          "profile_after": 3,
+          "visible_glyph_bounds_native": [
+            107,
+            187,
+            210,
+            194
+          ],
+          "point_native": [
+            207,
+            190
+          ],
+          "hover_glyph_brightness_delta": 126.86460348162475,
+          "changed_glyph_pixels": 517,
+          "glyph_pixels": 517,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "right",
+          "profile_before": 3,
+          "profile_after": 4,
+          "visible_glyph_bounds_native": [
+            114,
+            187,
+            203,
+            194
+          ],
+          "point_native": [
+            200,
+            190
+          ],
+          "hover_glyph_brightness_delta": 123.1469933184855,
+          "changed_glyph_pixels": 447,
+          "glyph_pixels": 449,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "right",
+          "profile_before": 4,
+          "profile_after": 0,
+          "visible_glyph_bounds_native": [
+            108,
+            187,
+            209,
+            194
+          ],
+          "point_native": [
+            206,
+            190
+          ],
+          "hover_glyph_brightness_delta": 121.99204771371771,
+          "changed_glyph_pixels": 503,
+          "glyph_pixels": 503,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "right",
+          "profile_before": 0,
+          "profile_after": 1,
+          "visible_glyph_bounds_native": [
+            80,
+            187,
+            238,
+            194
+          ],
+          "point_native": [
+            235,
+            190
+          ],
+          "hover_glyph_brightness_delta": 125.1023316062176,
+          "changed_glyph_pixels": 772,
+          "glyph_pixels": 772,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        },
+        {
+          "phase": "right",
+          "profile_before": 1,
+          "profile_after": 2,
+          "visible_glyph_bounds_native": [
+            114,
+            187,
+            203,
+            194
+          ],
+          "point_native": [
+            200,
+            190
+          ],
+          "hover_glyph_brightness_delta": 122.2654462242563,
+          "changed_glyph_pixels": 437,
+          "glyph_pixels": 437,
+          "white_border_pixels": 0,
+          "menu_retained": true
+        }
+      ],
+      "scope": "15 left/middle/right actual clicks across five label widths on a511. Final d6 changes only before-fade restoration; same hit/color routines retained."
+    },
+    "final_representative_clicks": [
       {
-        "setting": 0,
-        "enemy_outgoing_40": 10,
-        "party_hit_40": 127
+        "point_native": [
+          111,
+          190
+        ],
+        "phase": "left",
+        "profile_before": 2,
+        "profile_after": 3,
+        "hover_brightness_delta": 115.68858800773697,
+        "changed_glyph_pixels": 516,
+        "glyph_pixels": 517
       },
       {
-        "setting": 1,
-        "enemy_outgoing_40": 30,
-        "party_hit_40": 53
+        "point_native": [
+          200,
+          190
+        ],
+        "phase": "right",
+        "profile_before": 3,
+        "profile_after": 4,
+        "hover_brightness_delta": 123.1469933184855,
+        "changed_glyph_pixels": 447,
+        "glyph_pixels": 449
       },
       {
-        "setting": 2,
-        "enemy_outgoing_40": 40,
-        "party_hit_40": 40
-      },
-      {
-        "setting": 3,
-        "enemy_outgoing_40": 50,
-        "party_hit_40": 32
-      },
-      {
-        "setting": 4,
-        "enemy_outgoing_40": 80,
-        "party_hit_40": 20
-      },
-      {
-        "setting": 3,
-        "one_point_hits": [
-          0,
-          1,
-          1,
-          1,
-          1,
-          0,
-          1,
-          1,
-          1,
-          1,
-          0,
-          1,
-          1,
-          1,
-          1,
-          0,
-          1,
-          1,
-          1,
-          1
-        ]
-      },
-      {
-        "setting": 4,
-        "one_point_hits": [
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1,
-          0,
-          1
-        ]
+        "point_native": [
+          158,
+          190
+        ],
+        "phase": "middle",
+        "profile_before": 4,
+        "profile_after": 0,
+        "hover_brightness_delta": 116.88866799204769,
+        "changed_glyph_pixels": 502,
+        "glyph_pixels": 503
       }
     ],
-    "symbols": {
-      "init": 9881,
-      "damage": 10166,
-      "rng": 10391,
-      "magic_restored": 10492,
-      "mana_read": 10522,
-      "mana_write": 10541,
-      "eligible": 10569,
-      "tick": 10586,
-      "mana_init": 10701,
-      "open_book": 10731,
-      "new_book": 10081
+    "evidence": [
+      "fix-1.2.2/runtime/final/evidence/d6-start-current.png",
+      "fix-1.2.2/runtime/final/evidence/d6-menu-ready.png",
+      "fix-1.2.2/runtime/final/evidence/d6-left-unselected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-left-hover.png",
+      "fix-1.2.2/runtime/final/evidence/d6-right-unselected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-right-hover.png",
+      "fix-1.2.2/runtime/final/evidence/d6-middle-unselected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-middle-hover.png",
+      "fix-1.2.2/runtime/final/evidence/d6-child-fade.png",
+      "fix-1.2.2/runtime/final/evidence/d6-new-game-completed-fade.png",
+      "fix-1.2.2/runtime/final/evidence/d6-return-current.png",
+      "fix-1.2.2/runtime/final/evidence/d6-child-return-before-any-extra-input.png",
+      "fix-1.2.2/runtime/final/evidence/d6-child-return-settled-no-extra-input.png",
+      "fix-1.2.2/runtime/final/evidence/d6-return-unselected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-return-left-hover.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-offrow.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-down-0.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-down-1.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-down-2.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-down-3.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-down-4.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-down-5.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-quotes-selected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-difficulty-selected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-keyboard-enter-hard.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-offrow.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-down-0.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-down-1.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-down-2.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-down-3.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-down-4.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-down-5.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-quotes-selected.png",
+      "fix-1.2.2/runtime/final/evidence/d6-clean-focus-difficulty-selected.png",
+      "fix-1.2.2/runtime/final/evidence/final-clean-selected-difficulty-normal.png",
+      "fix-1.2.2/runtime/final/evidence/d6-normal-journey-world.png"
+    ],
+    "status": "passed",
+    "child_return": {
+      "original_new_game_opened": true,
+      "original_return_succeeded": true,
+      "return_click_native": [
+        231,
+        184
+      ],
+      "click_repeated": true,
+      "difficulty_visible_on_first_returned_canvas_before_extra_input": true,
+      "first_return_glyph_pixels": 551,
+      "settled_return_glyph_pixels": 551,
+      "left_hover_and_click_passed": true,
+      "hover_brightness_delta": 115.68858800773697
+    },
+    "keyboard": {
+      "observed_original_quotes_then_down_into_difficulty": true,
+      "pointer_off_row_native": [
+        20,
+        110
+      ],
+      "difficulty_selected_brightness_delta": 128.84139264990327,
+      "changed_glyph_pixels": 517,
+      "glyph_pixels": 517,
+      "enter_cycled_normal_to_hard": true
+    },
+    "clean_selected_png": "fix-1.2.2/runtime/final/evidence/final-clean-selected-difficulty-normal.png",
+    "journey": {
+      "activated_original_row": true,
+      "profile_normal": true,
+      "supplied_world_reached": true
     }
   },
+  "assembled_menu_cases": [
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 1,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 3,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 4,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 5,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 6,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 10,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 11,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "03",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: HARD"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 0,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "01",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: GAME JOURNALIST"
+        ],
+        [
+          "label",
+          "DIFFICULTY: EASY"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 1,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: EASY"
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "03",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: HARD"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 3,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "04",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: HARD"
+        ],
+        [
+          "label",
+          "DIFFICULTY: AVATAR"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 4,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "00",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: AVATAR"
+        ],
+        [
+          "label",
+          "DIFFICULTY: GAME JOURNALIST"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "carry",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: SAVE FAILED"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "short",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: SAVE FAILED"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "carry",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "03",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: SAVE FAILED"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "ok",
+      "close": "ok",
+      "exists": false,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "03",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: HARD"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 14,
+      "write": "short",
+      "close": "ok",
+      "exists": false,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": null,
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "label",
+          "DIFFICULTY: SAVE FAILED"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": true,
+      "virtual_checks": false,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 0,
+      "child_return": false,
+      "virtual_checks": true,
+      "return_draw": false,
+      "disk": "00",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: GAME JOURNALIST"
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 1,
+      "child_return": false,
+      "virtual_checks": true,
+      "return_draw": false,
+      "disk": "01",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: EASY"
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": true,
+      "return_draw": false,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 3,
+      "child_return": false,
+      "virtual_checks": true,
+      "return_draw": false,
+      "disk": "03",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: HARD"
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 4,
+      "child_return": false,
+      "virtual_checks": true,
+      "return_draw": false,
+      "disk": "04",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: AVATAR"
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "draw_text",
+          49568
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    },
+    {
+      "event": 0,
+      "write": "ok",
+      "close": "ok",
+      "exists": true,
+      "read": 2,
+      "child_return": false,
+      "virtual_checks": false,
+      "return_draw": true,
+      "disk": "02",
+      "calls": [
+        [
+          "construct",
+          49568
+        ],
+        [
+          "label",
+          "DIFFICULTY: NORMAL"
+        ],
+        [
+          "draw_root",
+          52520,
+          0,
+          0
+        ],
+        [
+          "destroy",
+          49568
+        ],
+        [
+          "palette_destroy",
+          4660
+        ]
+      ],
+      "passed": true
+    }
+  ],
   "installer": {
-    "version": "1.2",
-    "output_sha256": "53bb9c174ec04959777a494cfb788365df5e2d35d0e38cbcb24cadae60173d51",
+    "version": "1.2.2",
+    "output_sha256": "293eca6b8d35840d7f6142daa8e5ecda51083befdd349786d29337b9667180e5",
     "status": "passed",
     "checks": [
       "pristine check: complete output verified; no game writes",
       "pristine install: exact release hash; verified backup; saves/config retained",
       "current version: idempotent install/check and direct executable path",
       "uninstall: exact original restored; backup/save/config retained; repeat safe",
-      "v1.1 upgrade: existing local original recognized; old files and new progress retained",
-      "v1.1 missing backup: refused without writes; explicit verified original succeeds",
+      "1.2-independent executable upgrade: existing local original recognized; old files and new progress retained",
+      "1.2-independent missing backup: refused without writes; explicit verified original succeeds",
+      "complete previous game upgrade: exact changes MAINMENU.EXE; resources, originals, difficulty, saves and config retained; repeat is idempotent",
+      "previous native menu without its verified original: refused before any write",
       "unknown/modified executable: install/uninstall refused without writes",
       "conflicting backup: check/install refused; both existing files retained",
       "concurrent installer lock: refused before executable replacement",
@@ -120,33 +1528,11 @@
       "multi-file failure: three committed replacements rolled back; originals and backups retained"
     ]
   },
-  "resource_checks": {
-    "status": "PASS",
-    "original_records": 1012,
-    "modified_merchants": 6,
-    "new_functions": 1,
-    "pristine_linkdep_reconstruction": "both byte-identical",
-    "original_dialogue_operands_and_branch_destinations": "preserved"
-  },
-  "native_dosbox_observations": [
-    "Boot selector displays five choices, stores the chosen byte and resumes original MAINMENU without its size warning.",
-    "Avatar native spellbook opens through Cast; Jaana without her own book is rejected.",
-    "Jaana with original learned book opens native spellbook; missing own reagents prevent Light.",
-    "With reagents in her own nested inventory, native Light consumes mana 18 to 17, preserves identity bytes 0C/0C and returns to tactical pause.",
-    "Game clock remains 10971 before and after the paused cast; actual Avatar IBO 0038 restored and active caster cleared.",
-    "Original flag 3 cleared in a disposable fixture blocks companion casting with Magic unrestored message.",
-    "Native SaveUI writes initialized companion mana to U7NBUF.DAT; a native reload restores saved 18 after live RAM was changed to 3, with Avatar IBO 0038.",
-    "Nystul spellbook topic and confirmation work in the original DOS Usecode VM.",
-    "Successful purchase adds one book and reduces party gold from 10192 to 9692, exactly 500.",
-    "Fresh book native data contains FF/00/00/00/00 in first five circles and zero in second block, no advanced spells.",
-    "With party gold zeroed in a disposable fixture, buying is refused and book count remains two.",
-    "Declining the repeated offer returns to original conversation and book count remains two."
+  "source_reproduction": "Exact full patch manifest, compiled objects and resource output identities from included .ORI originals",
+  "changed_native_sources": [
+    "asset_patcher.py",
+    "check_menu.py",
+    "menu/menu.asm"
   ],
-  "limits": [
-    "Focused native runtime checks and actual 16-bit code tests; no complete campaign playthrough.",
-    "Only Nystul purchase was exercised end to end in DOSBox; all six merchants received structural operand/branch preservation checks.",
-    "Native SaveUI was entered through a disposable fixture for serialization testing; every nested save/load/cancel path was not exhaustively replayed.",
-    "All five damage and innate-magic settings were executed in machine-code emulation; complete native combat encounters on each setting were not replayed.",
-    "No earlier interrupted v1.2 test claims are adopted; v1.1 source retention does not imply every old runtime scenario was repeated."
-  ]
+  "scope": "Focused native menu input/rendering checks; existing engine, tactical popup and gameplay resources are unchanged."
 }

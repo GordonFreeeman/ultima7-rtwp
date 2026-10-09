@@ -261,6 +261,10 @@ def install_complete(target, *, check, uninstall, original_path, info, native, o
             original = backup.read_bytes()
         elif record['backup']==BACKUP_NAME and any(matches(current,x) for x in info['accepted_previous']):
             original = read_original(path,current,info,original_path)
+        elif any(matches(current,x) for x in record.get('accepted_previous', [])):
+            require(backup.is_file() and not backup.is_symlink(),
+                    f'Missing original backup for the previous {record["path"]}.')
+            original = backup.read_bytes()
         else:
             raise InstallError(f'Unsupported or independently modified {record["path"]}. No game files were changed.')
         require(matches(original,record['original']), f'Original backup verification failed: {record["path"]}.')

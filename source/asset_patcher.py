@@ -30,35 +30,109 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 def patch_menu(original, payload):
+    """Install the resident extension in the actual native graphical menu.
+
+    The supported Borland CRT reserves a near data/heap/stack arena. Merely
+    appending a hook below its old stack would not make that hook resident.
+    We reserve the extension between the original BSS end and the relocated
+    near heap/stack boundary, retain the original BSS clear range, and give
+    the original menu's 0x1DFC-byte frame a 0x4000-byte stack/near heap arena.
+    """
     require(sha(original) == MENU_HASH, 'Unsupported MAINMENU.EXE')
+    require(payload[:8] == b'U7NDIF2\0', 'Unsupported native menu payload')
+    version, header, create, poll, cleanup, table, count, size = struct.unpack_from('<8H', payload, 8)
+    return_draw = struct.unpack_from('<H', payload, 24)[0]
+    require(version == 2 and header == 32 and size == len(payload), 'Invalid menu manifest')
+    require(all(header <= entry < table for entry in (create, poll, cleanup, return_draw)), 'Invalid menu hooks')
+    require(count == 10 and table + count*2 == len(payload), 'Invalid menu relocation table')
+    reloc_words = struct.unpack_from('<'+'H'*count, payload, table)
+    require(len(set(reloc_words)) == count and all(header <= at < table-1 for at in reloc_words),
+            'Invalid menu segment locations')
     b = bytearray(original)
     load = struct.unpack_from('<H', b, 8)[0] * 16
-    ss, sp = struct.unpack_from('<HH', b, 14)
     ip, cs = struct.unpack_from('<HH', b, 20)
-    require((ip,cs) == (0,0), 'Unexpected original menu entry')
-    # Original runtime clears BSS and starts with a temporary stack beyond
-    # the file-backed image. Keep the appended code beyond both regions.
-    relative = (max(len(b)-load, ss*16+sp+0x300) + 15) & ~15
+    require(load == 0x2200 and (ip, cs) == (0, 0), 'Unexpected native menu layout')
+    reloc_count = struct.unpack_from('<H', b, 6)[0]
+    reloc_start = struct.unpack_from('<H', b, 24)[0]
+    require((reloc_count, reloc_start) == (2112, 0x3E), 'Unexpected menu relocation header')
+    relocations = [struct.unpack_from('<HH', b, reloc_start+i*4) for i in range(reloc_count)]
+    locations = {segment*16+offset for offset, segment in relocations}
+    require(len(locations) == reloc_count, 'Duplicate original menu relocation')
+
+    def guard(image_offset, expected, replacement):
+        at = load + image_offset
+        require(b[at:at+len(expected)] == expected, f'Unexpected native menu bytes at {image_offset:05X}')
+        require(len(expected) == len(replacement), 'Native menu edit changes instruction span')
+        b[at:at+len(expected)] = replacement
+
+    data_segment = 0x17D9
+    old_bss_end = 0x5AA0
+    # The new row inherits all native text virtual methods except its renderer
+    # and pointer predicate. Validate the near-DATA vtable copied by the hook.
+    require(b[load+data_segment*16+0x1172:load+data_segment*16+0x11AA] ==
+            bytes.fromhex('1e 04 f5 0b 79 04 f5 0b 05 05 f5 0b bd 08 d5 09 '
+                          '85 02 d5 09 8c 02 d5 09 93 02 d5 09 76 01 f5 0b '
+                          '34 05 d5 09 e9 05 d5 09 5a 03 f5 0b 83 03 f5 0b '
+                          'd3 03 f5 0b 88 03 f5 0b'),
+            'Unexpected native text-widget virtual table')
+    relative = data_segment*16 + old_bss_end
+    require(len(b)-load < relative, 'Native menu payload overlaps file-backed original')
     segment = relative//16
-    payload = bytearray(payload)
-    marker = b'\x2d\xcd\xab'
-    require(payload.count(marker) == 1, 'Invalid menu paragraph marker')
-    at = payload.index(marker)+1
-    struct.pack_into('<H', payload, at, segment)
-    b.extend(b'\0'*(load+relative-len(b)))
-    b.extend(payload)
+    new_bss_end = ((old_bss_end+len(payload)+15)//16)*16
+    require(new_bss_end+0x4000 < 0xFF00, 'Menu near arena overflow')
+    require(b[load+0xC4:load+0xCA] == bytes.fromhex('bf fc 50 b9 a0 5a'),
+            'Unexpected native BSS clear range')
+    # DOS startup computes allocation/stack top from this end. The clear loop
+    # deliberately keeps its old end: our file-backed reservation stays intact.
+    guard(0x6B, bytes.fromhex('81 c7 a0 5a'), b'\x81\xC7'+struct.pack('<H',new_bss_end))
+    for at in (0x9A, 0x9C):
+        guard(data_segment*16+at, struct.pack('<H',old_bss_end), struct.pack('<H',new_bss_end))
+    guard(data_segment*16+0x4D62, b'\x00\x10', b'\x00\x40')
+    # The original self-size warning remains operative for this deliberate size.
     require(b[0x9A20:0x9A2B] == bytes.fromhex('83 7e ee 01 75 07 81 7e ec 8c f0'),
             'Unexpected native menu size check')
-    # Keep the native self-size check, updated to the deliberate patch size.
+    # Extra text widget belongs to the original owner frame and is never a
+    # dangling pointer to an appended segment interpreted as native near data.
+    guard(0x565A, bytes.fromhex('c8 fc 1d 00'), bytes.fromhex('c8 60 1e 00'))
+    for image_offset, expected, entry, existing in (
+            (0x5BEE, bytes.fromhex('8a 46 ff b4 00'), create, False),
+            (0x6203, bytes.fromhex('9a 2a 03 75 09'), poll, True),
+            (0x65AD, bytes.fromhex('9a 38 0d d5 09'), return_draw, True),
+            (0x6D8E, bytes.fromhex('9a 36 02 ea 0d'), cleanup, True)):
+        word_at = image_offset+3
+        require((word_at in locations) == existing, 'Unexpected native hook relocation')
+        guard(image_offset, expected, b'\x9A'+struct.pack('<HH',entry,segment))
+        if not existing:
+            relocations.append((word_at%16,word_at//16))
+            locations.add(word_at)
+    # Retain all six native actions, names, image resources and original IDs.
+    # Seven eight-pixel rows fit under the title at a twelve-pixel pitch.
+    for at, old, new in ((0x5B7D,115,115), (0x5B8F,130,127),
+                         (0x5BA2,145,139), (0x5BB5,160,151),
+                         (0x5BC8,175,163), (0x5BDB,190,175)):
+        expected = bytes([0x6A,old]) if old < 128 else b'\x68'+struct.pack('<H',old)
+        replacement = bytes([0x6A,new]) if old < 128 else b'\x68'+struct.pack('<H',new)
+        guard(at,expected,replacement)
+    b.extend(b'\0'*(load+relative-len(b)))
+    b.extend(payload)
+    for at in reloc_words:
+        address = relative+at
+        require(address not in locations, 'Duplicate appended menu relocation')
+        relocations.append((address%16,address//16))
+        locations.add(address)
+    require(reloc_start+len(relocations)*4 <= load, 'Menu relocation header has no capacity')
+    for i, record in enumerate(relocations):
+        struct.pack_into('<HH',b,reloc_start+i*4,*record)
+    struct.pack_into('<H',b,6,len(relocations))
     require(len(b)//65536 < 128, 'Menu exceeds compact size-check range')
     b[0x9A23] = len(b)//65536
     struct.pack_into('<H',b,0x9A29,len(b)&65535)
-    stack_segment = ((len(b)-load)+15)//16
-    struct.pack_into('<HH', b, 14, stack_segment, 0x400)
-    struct.pack_into('<HH', b, 20, 0, segment)
+    # Native entry is untouched. The initial DOS stack is above the extension;
+    # the CRT then installs its retained 0x4000-byte near arena and stack.
+    struct.pack_into('<H', b, 10, 0x400)
+    struct.pack_into('<HH', b, 14, data_segment+new_bss_end//16, 0x80)
     struct.pack_into('<HH', b, 2, len(b)%512, (len(b)+511)//512)
-    # Existing relocations remain at identical addresses. The appended code
-    # computes its original CS from the paragraph delta, needing no relocation.
+    require(struct.unpack_from('<HH',b,20) == (0,0), 'Native menu entry changed')
     return bytes(b)
 
 def functions(data):
